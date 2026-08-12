@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -37,14 +37,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.4rem;
+      padding: 0.8rem;
       margin: 0;
       color: var(--text-primary);
       position: relative;
       overflow-x: hidden;
     }
 
-    #particleCanvas {
+    /* --- Matrix Rain Background --- */
+    #matrixCanvas {
       position: fixed;
       top: 0;
       left: 0;
@@ -52,12 +53,12 @@
       height: 100%;
       z-index: 0;
       pointer-events: none;
-      opacity: 0.9;
+      opacity: 0.35;
     }
 
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
     }
     ::-webkit-scrollbar-track {
       background: var(--scrollbar-track);
@@ -77,24 +78,23 @@
       max-width: 1420px;
       position: relative;
       z-index: 10;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .glass-app {
       width: 100%;
-      background: rgba(8, 6, 18, 0.5);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-radius: 3.2rem;
-      border: 1px solid rgba(160, 110, 255, 0.28);
-      box-shadow: 0 35px 70px -20px rgba(0, 0, 0, 0.98), 0 0 0 1px rgba(180, 77, 255, 0.35);
+      background: rgba(8, 6, 18, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 2.2rem;
+      border: 1px solid rgba(160, 110, 255, 0.25);
+      box-shadow: 0 35px 70px -20px rgba(0, 0, 0, 0.98), 0 0 0 1px rgba(180, 77, 255, 0.3);
       overflow: hidden;
-      transition: all 0.3s ease;
-      animation: fadeSlideUp 0.7s cubic-bezier(0.22, 0.98, 0.33, 1);
+      animation: fadeSlideUp 0.6s cubic-bezier(0.22, 0.98, 0.33, 1);
     }
 
     @keyframes fadeSlideUp {
-      0% { opacity: 0; transform: translateY(45px); }
+      0% { opacity: 0; transform: translateY(30px); }
       100% { opacity: 1; transform: translateY(0); }
     }
 
@@ -103,316 +103,330 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      padding: 1.9rem 2.8rem;
-      background: rgba(6, 4, 18, 0.65);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      border-bottom: 1px solid rgba(180, 120, 255, 0.4);
-      gap: 1.8rem;
+      padding: 1.2rem 1.5rem;
+      background: rgba(6, 4, 18, 0.6);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(180, 120, 255, 0.35);
+      gap: 1rem;
     }
 
     .logo-area {
       display: flex;
       align-items: center;
-      gap: 0.9rem;
+      gap: 0.5rem;
     }
 
     .glow-symbol {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 3rem;
+      font-size: 2.2rem;
       font-weight: 700;
       background: linear-gradient(135deg, #ea80fc, #b44dff, #7c4dff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 22px #b44dff);
-      animation: softPulse 2.5s infinite alternate;
-    }
-
-    @keyframes softPulse {
-      0% { filter: drop-shadow(0 0 12px #ea80fc); }
-      100% { filter: drop-shadow(0 0 28px #e040fb); }
+      filter: drop-shadow(0 0 18px #b44dff);
     }
 
     .logo-text {
       font-weight: 700;
-      letter-spacing: 0.9px;
+      letter-spacing: 0.8px;
       color: #ede4ff;
-      text-shadow: 0 0 24px #7c4dff;
+      text-shadow: 0 0 20px #7c4dff;
+      font-size: 1.3rem;
+    }
+    .logo-text span {
+      color: #ea80fc;
     }
 
     .nav-links {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.5rem;
       font-weight: 600;
       color: #ceb0ff;
     }
 
     .nav-links span {
       cursor: pointer;
-      padding: 0.6rem 1.3rem;
+      padding: 0.4rem 0.9rem;
       border-radius: 3rem;
-      border: 1px solid rgba(180, 90, 255, 0.4);
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-      background: rgba(25, 10, 45, 0.45);
-      backdrop-filter: blur(10px);
-      letter-spacing: 0.5px;
+      border: 1px solid rgba(180, 90, 255, 0.35);
+      transition: all 0.25s ease;
+      font-size: 0.75rem;
+      background: rgba(25, 10, 45, 0.4);
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.4px;
     }
 
     .nav-links span.active-nav,
     .nav-links span:hover {
       border-color: #e040fb;
-      background: rgba(180, 77, 255, 0.3);
+      background: rgba(180, 77, 255, 0.25);
       color: #ffffff;
-      box-shadow: 0 0 28px rgba(224, 64, 251, 0.7);
-      transform: translateY(-3px);
+      box-shadow: 0 0 25px rgba(224, 64, 251, 0.5);
+      transform: translateY(-2px);
     }
 
     .dashboard {
       display: flex;
       flex-wrap: wrap;
-      padding: 2.2rem 2.8rem 2.8rem;
-      gap: 2.8rem;
+      padding: 1.2rem 1.2rem 1.5rem;
+      gap: 1.5rem;
     }
 
     .converter-panel {
       flex: 2.2;
-      min-width: 350px;
+      min-width: 260px;
       display: flex;
       flex-direction: column;
-      gap: 2.2rem;
+      gap: 1.5rem;
     }
 
     .glass-card {
       background: rgba(14, 10, 28, 0.45);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 2.8rem;
-      padding: 2rem 2.2rem;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 2rem;
+      padding: 1.2rem 1.3rem;
       border: var(--border-glow);
       box-shadow: var(--card-elevation);
-      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1), box-shadow 0.3s ease, border-color 0.2s;
-      animation: fadeSlideUp 0.5s ease;
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1), box-shadow 0.25s ease;
     }
 
     .glass-card:hover {
-      transform: translateY(-7px);
-      box-shadow: 0 35px 55px -15px rgba(180, 77, 255, 0.35), 0 0 0 1px rgba(224, 64, 251, 0.55);
-      border-color: rgba(224, 64, 251, 0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 30px 50px -15px rgba(180, 77, 255, 0.3);
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1.2rem;
+      gap: 0.3rem;
+      margin-bottom: 0.8rem;
     }
 
     label {
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
-      font-size: 0.7rem;
+      letter-spacing: 1px;
+      font-size: 0.6rem;
       color: #b39ddb;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.3rem;
     }
 
     .matrix-input {
-      background: rgba(8, 6, 22, 0.75);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(180, 100, 255, 0.55);
-      border-radius: 1.5rem;
-      padding: 1.1rem 1.5rem;
+      background: rgba(8, 6, 22, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(180, 100, 255, 0.45);
+      border-radius: 1.3rem;
+      padding: 0.7rem 1rem;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.2rem;
+      font-size: 0.95rem;
       font-weight: 500;
       color: #ede0ff;
       outline: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 18px rgba(140, 70, 255, 0.25);
+      transition: all 0.25s ease;
+      box-shadow: 0 0 15px rgba(140, 70, 255, 0.15);
       width: 100%;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.4px;
     }
 
     .matrix-input:focus {
       border-color: #e040fb;
-      box-shadow: 0 0 35px rgba(224, 64, 251, 0.8);
-      background: rgba(10, 8, 28, 0.9);
+      box-shadow: 0 0 30px rgba(224, 64, 251, 0.6);
+      background: rgba(10, 8, 28, 0.85);
       color: #ffffff;
     }
 
     .conversion-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 2rem;
+      gap: 0.8rem;
     }
 
     .base-field {
       flex: 1;
-      min-width: 145px;
+      min-width: 100px;
     }
 
     .ieee-breakdown {
-      margin-top: 1.1rem;
+      margin-top: 0.8rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.6rem;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
     }
 
     .ieee-part {
-      background: rgba(20, 10, 40, 0.55);
-      padding: 1rem 1.3rem;
-      border-radius: 1.2rem;
-      border: 1px dashed rgba(200, 140, 255, 0.55);
+      background: rgba(20, 10, 40, 0.5);
+      padding: 0.6rem 0.9rem;
+      border-radius: 1rem;
+      border: 1px dashed rgba(200, 140, 255, 0.45);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 0.7rem;
-      backdrop-filter: blur(10px);
+      gap: 0.4rem;
+      backdrop-filter: blur(8px);
     }
 
     .bit-field {
-      background: rgba(0,0,0,0.55);
-      padding: 0.25rem 0.7rem;
-      border-radius: 0.5rem;
-      letter-spacing: 0.9px;
+      background: rgba(0,0,0,0.5);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.4rem;
+      letter-spacing: 0.6px;
       color: #e1bee7;
+      font-size: 0.65rem;
     }
 
     .arithmetic-row {
       display: flex;
-      gap: 1.1rem;
+      gap: 0.6rem;
       align-items: center;
       flex-wrap: wrap;
-      margin: 1.3rem 0 0.9rem;
+      margin: 0.8rem 0 0.6rem;
+    }
+    .arithmetic-row .matrix-input {
+      min-width: 80px;
+      width: auto;
+      flex: 1;
+    }
+    .arithmetic-row select {
+      font-family: 'JetBrains Mono', monospace;
+      background: #241540;
+      color: #ede0ff;
+      border: 1px solid #b44dff;
+      border-radius: 2.5rem;
+      padding: 0.6rem 0.8rem;
+      font-weight: bold;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 10px rgba(180,77,255,0.2);
+      font-size: 1.1rem;
+      min-width: 50px;
     }
 
     .op-btn, .clear-btn {
-      background: rgba(35, 20, 60, 0.75);
-      backdrop-filter: blur(14px);
+      background: rgba(35, 20, 60, 0.7);
+      backdrop-filter: blur(12px);
       border: 1px solid #b44dff;
       color: #ede0ff;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.2rem;
-      padding: 0.75rem 1.8rem;
+      font-size: 0.95rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 3rem;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.9px;
-      box-shadow: 0 4px 18px rgba(180, 77, 255, 0.25);
+      letter-spacing: 0.7px;
+      box-shadow: 0 4px 15px rgba(180, 77, 255, 0.2);
+      white-space: nowrap;
     }
 
     .op-btn:hover, .clear-btn:hover {
       background: #5c2d91;
-      box-shadow: 0 0 35px #e040fb;
+      box-shadow: 0 0 30px #e040fb;
       color: white;
-      transform: scale(1.05);
+      transform: scale(1.03);
       border-color: #e040fb;
     }
 
     .steps-area {
-      margin-top: 1.3rem;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 1.2rem;
-      padding: 1.3rem 1.5rem;
+      margin-top: 0.8rem;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 1rem;
+      padding: 0.8rem 1rem;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       color: #d1c4e9;
-      border-left: 5px solid #e040fb;
-      max-height: 230px;
+      border-left: 4px solid #e040fb;
+      max-height: 150px;
       overflow-y: auto;
-      backdrop-filter: blur(14px);
-      line-height: 1.6;
+      backdrop-filter: blur(10px);
+      line-height: 1.5;
     }
 
     .sidebar {
       flex: 0.9;
-      min-width: 270px;
-      background: rgba(14, 10, 28, 0.55);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-radius: 2.8rem;
-      padding: 2rem;
-      border: 1px solid rgba(200, 150, 255, 0.35);
+      min-width: 200px;
+      background: rgba(14, 10, 28, 0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 2rem;
+      padding: 1.2rem;
+      border: 1px solid rgba(200, 150, 255, 0.3);
       height: fit-content;
-      animation: fadeSlideUp 0.65s ease;
     }
 
     .history-item {
       font-family: 'JetBrains Mono', monospace;
-      border-bottom: 1px solid rgba(200, 140, 255, 0.35);
-      padding: 0.8rem 0.7rem;
-      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(200, 140, 255, 0.25);
+      padding: 0.5rem 0.4rem;
+      font-size: 0.75rem;
       color: #d1b3ff;
       cursor: pointer;
-      transition: all 0.25s;
-      border-radius: 0.7rem;
+      transition: all 0.2s;
+      border-radius: 0.5rem;
+      word-break: break-all;
     }
 
     .history-item:hover {
-      background: rgba(180, 77, 255, 0.3);
+      background: rgba(180, 77, 255, 0.25);
       color: white;
-      text-shadow: 0 0 14px #e040fb;
-      padding-left: 1.2rem;
+      text-shadow: 0 0 12px #e040fb;
+      padding-left: 0.8rem;
     }
 
     .result-highlight {
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       color: #f5f0ff;
-      background: rgba(160, 80, 255, 0.35);
-      padding: 0.35rem 1.1rem;
-      border-radius: 1rem;
+      background: rgba(160, 80, 255, 0.3);
+      padding: 0.15rem 0.6rem;
+      border-radius: 0.8rem;
+      word-break: break-all;
     }
 
-    /* Copyright Footer */
     .copyright-footer {
       width: 100%;
       text-align: center;
-      padding: 1.2rem 2rem;
-      background: rgba(8, 6, 18, 0.55);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 3rem;
-      border: 1px solid rgba(180, 130, 255, 0.3);
+      padding: 0.8rem 1.2rem;
+      background: rgba(8, 6, 18, 0.5);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 2.5rem;
+      border: 1px solid rgba(180, 130, 255, 0.25);
       box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8);
-      animation: fadeSlideUp 0.8s ease;
     }
 
     .copyright-text {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.7rem;
       color: #b39ddb;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
+      letter-spacing: 0.4px;
     }
 
     .copyright-text a {
       color: #ce93d8;
       text-decoration: none;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       border-bottom: 1px solid transparent;
     }
 
     .copyright-text a:hover {
       color: #ea80fc;
       border-bottom: 1px solid #ea80fc;
-      text-shadow: 0 0 15px #e040fb;
+      text-shadow: 0 0 12px #e040fb;
     }
 
     .copyright-divider {
       display: inline-block;
-      margin: 0 0.8rem;
-      color: rgba(180, 130, 255, 0.5);
+      margin: 0 0.4rem;
+      color: rgba(180, 130, 255, 0.4);
     }
 
     .copyright-year {
@@ -420,40 +434,127 @@
       font-weight: 600;
     }
 
-    @media (max-width: 700px) {
-      body { padding: 0.5rem; }
-      .glass-header { flex-direction: column; align-items: flex-start; }
-      .nav-links { gap: 0.7rem; }
-      .copyright-footer { padding: 1rem 1.5rem; }
-      .copyright-text { font-size: 0.75rem; }
+    /* --- تحسينات الهواتف --- */
+    @media (max-width: 900px) {
+      .dashboard {
+        flex-direction: column;
+      }
+      .sidebar {
+        min-width: unset;
+        width: 100%;
+      }
     }
 
-    select {
-      font-family: 'JetBrains Mono', monospace;
-      background: #241540;
-      color: #ede0ff;
-      border: 1px solid #b44dff;
-      border-radius: 2.8rem;
-      padding: 0.8rem;
-      font-weight: bold;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 0 12px rgba(180,77,255,0.3);
+    @media (max-width: 700px) {
+      body { padding: 0.4rem; }
+      #matrixCanvas { opacity: 0.25; }
+      .glass-header { 
+        flex-direction: column; 
+        align-items: stretch;
+        padding: 1rem;
+      }
+      .logo-area { justify-content: center; }
+      .logo-text { font-size: 1.1rem; }
+      .glow-symbol { font-size: 1.8rem; }
+      .nav-links { 
+        justify-content: center; 
+        gap: 0.3rem;
+        flex-wrap: wrap;
+      }
+      .nav-links span { 
+        font-size: 0.65rem; 
+        padding: 0.3rem 0.6rem;
+      }
+      .glass-card { 
+        padding: 1rem; 
+        border-radius: 1.5rem;
+      }
+      .conversion-row { 
+        flex-direction: column; 
+        gap: 0.6rem;
+      }
+      .base-field { 
+        min-width: unset;
+        width: 100%;
+      }
+      .matrix-input {
+        font-size: 0.85rem;
+        padding: 0.6rem 0.8rem;
+      }
+      .arithmetic-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .arithmetic-row .matrix-input {
+        min-width: 60px;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.7rem;
+      }
+      .arithmetic-row select {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.9rem;
+        min-width: 40px;
+      }
+      .op-btn, .clear-btn { 
+        font-size: 0.8rem; 
+        padding: 0.5rem 1rem;
+      }
+      .copyright-footer { 
+        padding: 0.6rem 0.8rem;
+        border-radius: 2rem;
+      }
+      .copyright-text { 
+        font-size: 0.6rem;
+      }
+      .steps-area {
+        font-size: 0.7rem;
+        padding: 0.6rem 0.8rem;
+        max-height: 120px;
+      }
+      .ieee-part {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.7rem;
+      }
+      .result-highlight {
+        font-size: 0.8rem;
+        padding: 0.1rem 0.5rem;
+      }
+    }
+
+    @media (max-width: 450px) {
+      .arithmetic-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .arithmetic-row select {
+        align-self: center;
+        width: 70px;
+      }
+      .ieee-part {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .ieee-part strong {
+        align-self: flex-start;
+      }
     }
   </style>
 </head>
 <body>
-  <canvas id="particleCanvas"></canvas>
+  <!-- Matrix Rain Background -->
+  <canvas id="matrixCanvas"></canvas>
 
   <div class="main-wrapper">
     <div class="glass-app">
       <header class="glass-header">
         <div class="logo-area">
           <span class="glow-symbol">𝕸</span>
-          <span class="logo-text" style="font-size: 1.9rem; font-weight: 700;">BitMatrix <span style="color:#ea80fc;">MC88</span></span>
+          <span class="logo-text">BitMatrix <span>MC88</span></span>
         </div>
         <div class="nav-links">
           <span class="active-nav">⚡ Converter</span>
-          <span>🧮 Float IEEE754</span>
+          <span>🧮 IEEE754</span>
           <span>➕ Operations</span>
           <span>📋 History</span>
         </div>
@@ -462,11 +563,11 @@
       <div class="dashboard">
         <div class="converter-panel">
           <div class="glass-card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h3 style="font-weight: 650; letter-spacing: 1.5px; color:#ede4ff;">🔷 UNIVERSAL CONVERTER</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:0.4rem;">
+              <h3 style="font-weight: 650; letter-spacing: 1.2px; color:#ede4ff; font-size:1rem;">🔷 UNIVERSAL CONVERTER</h3>
               <span class="clear-btn" id="clearConverter">Clear</span>
             </div>
-            <div class="conversion-row" style="margin-top:1.3rem;">
+            <div class="conversion-row" style="margin-top:0.8rem;">
               <div class="base-field">
                 <label>🔟 Decimal</label>
                 <input type="text" id="decInput" class="matrix-input" placeholder="10.625" value="10.625" autocomplete="off">
@@ -486,373 +587,350 @@
           </div>
 
           <div class="glass-card">
-            <h3 style="font-weight: 650; color:#ede4ff;">🧮 IEEE 754 FLOATING-POINT STANDARD</h3>
-            <div class="input-group" style="margin-top: 1rem;">
+            <h3 style="font-weight: 650; color:#ede4ff; font-size:1rem;">🧮 IEEE 754 FLOATING-POINT</h3>
+            <div class="input-group" style="margin-top:0.6rem;">
               <label>📥 Real Number Input</label>
               <input type="text" id="ieeeInput" class="matrix-input" placeholder="e.g. 5.75 or -12.625" value="5.75" autocomplete="off">
             </div>
             <div class="ieee-breakdown">
               <div class="ieee-part">
-                <span>🎯 Single Precision (32-bit Hex)</span>
+                <span>🎯 Single (32-bit Hex)</span>
                 <strong id="ieee32Hex" class="result-highlight">—</strong>
               </div>
               <div class="ieee-part">
                 <span>🧬 Sign | Exponent | Mantissa</span>
-                <strong id="ieee32Bits" style="color:#ede0ff; font-size: 0.8rem; word-break: break-all; display: flex; gap:0.5rem;">
+                <strong id="ieee32Bits" style="color:#ede0ff; font-size:0.7rem; word-break:break-all; display:flex; gap:0.2rem; flex-wrap:wrap;">
                   <span class="bit-field">—</span>
                 </strong>
               </div>
               <div class="ieee-part">
-                <span>🎯 Double Precision (64-bit Hex)</span>
+                <span>🎯 Double (64-bit Hex)</span>
                 <strong id="ieee64Hex" class="result-highlight">—</strong>
               </div>
             </div>
           </div>
 
           <div class="glass-card">
-            <h3 style="font-weight: 650; color:#ede4ff;">⚙️ ARITHMETIC (Bin / Hex fractions)</h3>
+            <h3 style="font-weight: 650; color:#ede4ff; font-size:1rem;">⚙️ ARITHMETIC (Bin / Hex)</h3>
             <div class="arithmetic-row">
-              <input type="text" id="operandA" class="matrix-input" placeholder="1010.1" style="width:150px;" autocomplete="off">
+              <input type="text" id="operandA" class="matrix-input" placeholder="1010.1" value="1010.1" autocomplete="off">
               <select id="arithmeticOp">
                 <option value="+">+</option>
                 <option value="-">−</option>
                 <option value="*">×</option>
                 <option value="/">÷</option>
               </select>
-              <input type="text" id="operandB" class="matrix-input" placeholder="10.1" style="width:150px;" autocomplete="off">
+              <input type="text" id="operandB" class="matrix-input" placeholder="10.1" value="10.1" autocomplete="off">
               <button id="computeArithBtn" class="op-btn">=</button>
             </div>
-            <div style="margin-top:1rem; display:flex; gap:1rem; flex-wrap:wrap; align-items: baseline;">
+            <div style="margin-top:0.6rem; display:flex; gap:0.8rem; flex-wrap:wrap; align-items: baseline;">
               <span>📌 Result:</span>
               <strong id="arithResult" class="result-highlight" style="font-family: monospace;">—</strong>
             </div>
-            <div id="arithSteps" class="steps-area" style="margin-top:0.9rem;">⚡ Arithmetic breakdown appears here</div>
+            <div id="arithSteps" class="steps-area" style="margin-top:0.6rem;">⚡ Arithmetic breakdown appears here</div>
           </div>
         </div>
 
         <div class="sidebar">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.3rem;">
-            <h3 style="font-weight: 650; color:#ede4ff;">🕒 Recent Conversions</h3>
-            <span class="clear-btn" id="clearHistory" style="font-size:0.7rem; padding:0.4rem 1.3rem;">Clear</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap:wrap; gap:0.4rem;">
+            <h3 style="font-weight: 650; color:#ede4ff; font-size:1rem;">🕒 Recent</h3>
+            <span class="clear-btn" id="clearHistory" style="font-size:0.6rem; padding:0.25rem 0.8rem;">Clear</span>
           </div>
-          <div id="historyList" style="max-height: 420px; overflow-y: auto;">
+          <div id="historyList" style="max-height: 300px; overflow-y: auto;">
             <div class="history-item">✨ No history yet</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Copyright Footer -->
     <footer class="copyright-footer">
       <p class="copyright-text">
-        <span class="copyright-year">© 2024</span>
+        <span class="copyright-year">© 2026</span>
         <span class="copyright-divider">|</span>
         <a href="mailto:mohamed005cheikh@gmail.com">mohamed005cheikh@gmail.com</a>
         <span class="copyright-divider">|</span>
-        <span>by <strong style="color:#ea80fc; text-shadow: 0 0 10px #b44dff;">MC</strong></span>
+        <span>by <strong style="color:#ea80fc; text-shadow: 0 0 8px #b44dff;">MC</strong></span>
       </p>
     </footer>
   </div>
 
-<script>
-  (function() {
-    // --- Fully preserved JavaScript functionality ---
-    const decInp = document.getElementById('decInput');
-    const binInp = document.getElementById('binInput');
-    const hexInp = document.getElementById('hexInput');
-    const stepsDiv = document.getElementById('conversionSteps');
-    const historyDiv = document.getElementById('historyList');
+  <script>
+    (function() {
+      // --- Matrix Rain Effect (محسّن للهواتف) ---
+      const canvas = document.getElementById('matrixCanvas');
+      const ctx = canvas.getContext('2d');
 
-    const ieeeInput = document.getElementById('ieeeInput');
-    const ieee32Hex = document.getElementById('ieee32Hex');
-    const ieee32Bits = document.getElementById('ieee32Bits');
-    const ieee64Hex = document.getElementById('ieee64Hex');
+      let width, height, columns, drops, fontSize, matrixChars;
 
-    const opA = document.getElementById('operandA');
-    const opB = document.getElementById('operandB');
-    const opSelect = document.getElementById('arithmeticOp');
-    const arithResultSpan = document.getElementById('arithResult');
-    const arithStepsDiv = document.getElementById('arithSteps');
+      function initMatrix() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
 
-    const parseDecimal = (str) => {
-      if (!str || str.trim() === '') return NaN;
-      return parseFloat(str.trim());
-    };
+        fontSize = Math.max(10, Math.min(18, width / 40));
+        columns = Math.floor(width / fontSize);
+        drops = [];
+        matrixChars = '01';
 
-    const decToBin = (decNum) => {
-      if (isNaN(decNum)) return { bin: 'Invalid', steps: '' };
-      const sign = decNum < 0 ? '-' : '';
-      let num = Math.abs(decNum);
-      let intPart = Math.floor(num);
-      let fracPart = num - intPart;
-      let binInt = intPart === 0 ? '0' : '';
-      let tempInt = intPart;
-      while (tempInt > 0) {
-        binInt = (tempInt % 2) + binInt;
-        tempInt = Math.floor(tempInt / 2);
-      }
-      let binFrac = '';
-      let tempFrac = fracPart;
-      let maxIter = 20;
-      while (tempFrac > 0 && binFrac.length < maxIter) {
-        tempFrac *= 2;
-        let bit = Math.floor(tempFrac);
-        binFrac += bit;
-        tempFrac -= bit;
-      }
-      let result = sign + binInt;
-      if (fracPart > 0 || binFrac.length > 0) result += '.' + (binFrac || '0');
-      const steps = `Integer ${intPart} → ${binInt} | Fraction 0.${fracPart.toString().substring(2,6)} → 0.${binFrac}`;
-      return { bin: result, steps };
-    };
-
-    const binToDec = (binStr) => {
-      if (!/^[01]+(\.[01]+)?$/.test(binStr.trim())) return NaN;
-      let parts = binStr.split('.');
-      let intPart = parts[0];
-      let fracPart = parts[1] || '';
-      let dec = 0;
-      for (let i = 0; i < intPart.length; i++) {
-        if (intPart[i] === '1') dec += Math.pow(2, intPart.length - 1 - i);
-      }
-      for (let i = 0; i < fracPart.length; i++) {
-        if (fracPart[i] === '1') dec += Math.pow(2, -(i+1));
-      }
-      return dec;
-    };
-
-    const decToHex = (decNum) => {
-      if (isNaN(decNum)) return 'Invalid';
-      let sign = decNum < 0 ? '-' : '';
-      let num = Math.abs(decNum);
-      let intPart = Math.floor(num);
-      let fracPart = num - intPart;
-      let hexInt = intPart === 0 ? '0' : '';
-      let tempInt = intPart;
-      while (tempInt > 0) {
-        let rem = tempInt % 16;
-        hexInt = (rem < 10 ? rem : String.fromCharCode(87 + rem)) + hexInt;
-        tempInt = Math.floor(tempInt / 16);
-      }
-      let hexFrac = '';
-      let temp = fracPart;
-      let maxIter = 12;
-      while (temp > 0 && hexFrac.length < maxIter) {
-        temp *= 16;
-        let digit = Math.floor(temp);
-        hexFrac += (digit < 10 ? digit : String.fromCharCode(87 + digit));
-        temp -= digit;
-      }
-      let result = sign + hexInt;
-      if (fracPart > 0 || hexFrac.length > 0) result += '.' + (hexFrac || '0');
-      return result;
-    };
-
-    const hexToDec = (hexStr) => {
-      if (!/^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(hexStr.trim())) return NaN;
-      let parts = hexStr.split('.');
-      let intPart = parts[0].toLowerCase();
-      let fracPart = parts[1] || '';
-      let dec = 0;
-      for (let i = 0; i < intPart.length; i++) {
-        let val = parseInt(intPart[i], 16);
-        dec += val * Math.pow(16, intPart.length - 1 - i);
-      }
-      for (let i = 0; i < fracPart.length; i++) {
-        let val = parseInt(fracPart[i], 16);
-        dec += val * Math.pow(16, -(i+1));
-      }
-      return dec;
-    };
-
-    const updateIEEE754 = () => {
-      let val = parseDecimal(ieeeInput.value);
-      if (isNaN(val)) {
-        ieee32Hex.textContent = 'Invalid';
-        ieee32Bits.innerHTML = '<span class="bit-field">—</span>';
-        ieee64Hex.textContent = 'Invalid';
-        return;
-      }
-      const buffer32 = new ArrayBuffer(4);
-      const view32 = new DataView(buffer32);
-      view32.setFloat32(0, val, false);
-      let int32 = view32.getUint32(0, false);
-      let hex32 = '0x' + int32.toString(16).toUpperCase().padStart(8, '0');
-      let bin32 = int32.toString(2).padStart(32, '0');
-      ieee32Hex.textContent = hex32;
-      ieee32Bits.innerHTML = `<span style="color:#f8bbd0;">S:${bin32[0]}</span> <span style="color:#81d4fa;">E:${bin32.slice(1,9)}</span> <span style="color:#ce93d8;">M:${bin32.slice(9)}</span>`;
-      const buffer64 = new ArrayBuffer(8);
-      const view64 = new DataView(buffer64);
-      view64.setFloat64(0, val, false);
-      let high32 = view64.getUint32(0, false);
-      let low32 = view64.getUint32(4, false);
-      ieee64Hex.textContent = '0x' + high32.toString(16).toUpperCase().padStart(8, '0') + low32.toString(16).toUpperCase().padStart(8, '0');
-    };
-
-    const addToHistory = (entry) => {
-      let stored = JSON.parse(localStorage.getItem('bitmatrixHistory') || '[]');
-      stored.unshift(entry);
-      if (stored.length > 12) stored.pop();
-      localStorage.setItem('bitmatrixHistory', JSON.stringify(stored));
-      renderHistory();
-    };
-
-    const renderHistory = () => {
-      let stored = JSON.parse(localStorage.getItem('bitmatrixHistory') || '[]');
-      historyDiv.innerHTML = stored.length ? stored.map(e => `<div class="history-item">${e}</div>`).join('') : '<div class="history-item">✨ No history yet</div>';
-    };
-
-    const updateAllFromDecimal = (source = 'dec') => {
-      let decVal = parseDecimal(decInp.value);
-      if (isNaN(decVal)) {
-        if (source !== 'dec') decInp.value = '';
-        binInp.value = ''; hexInp.value = '';
-        stepsDiv.innerHTML = '⛔ Invalid decimal number';
-        return;
-      }
-      let binObj = decToBin(decVal);
-      binInp.value = binObj.bin;
-      hexInp.value = decToHex(decVal);
-      stepsDiv.innerHTML = `🔹 ${decVal}₁₀ → ${binObj.bin}₂ → ${hexInp.value}₁₆<br>📐 ${binObj.steps}`;
-      addToHistory(`${decVal} → ${binObj.bin}₂`);
-    };
-
-    const updateFromBinary = () => {
-      let binStr = binInp.value.trim();
-      let dec = binToDec(binStr);
-      if (isNaN(dec)) { decInp.value = ''; hexInp.value = ''; stepsDiv.innerHTML = '❌ Invalid binary'; return; }
-      decInp.value = dec; hexInp.value = decToHex(dec);
-      stepsDiv.innerHTML = `📌 ${binStr}₂ → ${dec}₁₀ → ${hexInp.value}₁₆`;
-      addToHistory(`${binStr}₂ → ${dec}`);
-    };
-
-    const updateFromHex = () => {
-      let hexStr = hexInp.value.trim();
-      let dec = hexToDec(hexStr);
-      if (isNaN(dec)) { decInp.value = ''; binInp.value = ''; stepsDiv.innerHTML = '❌ Invalid hex'; return; }
-      decInp.value = dec; binInp.value = decToBin(dec).bin;
-      stepsDiv.innerHTML = `🧪 ${hexStr}₁₆ → ${dec}₁₀ → ${binInp.value}₂`;
-      addToHistory(`${hexStr}₁₆ → ${dec}`);
-    };
-
-    const performArithmetic = () => {
-      let aStr = opA.value.trim(), bStr = opB.value.trim(), op = opSelect.value;
-      if (!aStr || !bStr) { arithResultSpan.textContent = '—'; arithStepsDiv.innerHTML = '⚠️ Enter both operands'; return; }
-      let isBin = /^[01]+(\.[01]+)?$/.test(aStr) && /^[01]+(\.[01]+)?$/.test(bStr);
-      let isHex = /^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(aStr) && /^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(bStr);
-      if (!isBin && !isHex) { arithStepsDiv.innerHTML = '❌ Must be binary or hex'; return; }
-      let base = isBin ? 2 : 16;
-      let decA = isBin ? binToDec(aStr) : hexToDec(aStr);
-      let decB = isBin ? binToDec(bStr) : hexToDec(bStr);
-      if (isNaN(decA) || isNaN(decB)) { arithStepsDiv.innerHTML = 'Invalid format'; return; }
-      let resultDec;
-      switch(op) {
-        case '+': resultDec = decA + decB; break;
-        case '-': resultDec = decA - decB; break;
-        case '*': resultDec = decA * decB; break;
-        case '/': if (decB === 0) { arithResultSpan.textContent = 'Div/0'; return; } resultDec = decA / decB; break;
-      }
-      if (!isFinite(resultDec)) { arithResultSpan.textContent = 'Error'; return; }
-      let resultStr = isBin ? decToBin(resultDec).bin : decToHex(resultDec);
-      arithResultSpan.textContent = resultStr;
-      arithStepsDiv.innerHTML = `🧮 ${aStr} ${op} ${bStr} = ${resultDec}₁₀ → ${resultStr}`;
-    };
-
-    decInp.addEventListener('input', () => updateAllFromDecimal('dec'));
-    binInp.addEventListener('input', updateFromBinary);
-    hexInp.addEventListener('input', updateFromHex);
-    ieeeInput.addEventListener('input', updateIEEE754);
-    document.getElementById('computeArithBtn').addEventListener('click', performArithmetic);
-    document.getElementById('clearHistory').addEventListener('click', () => { localStorage.removeItem('bitmatrixHistory'); renderHistory(); });
-    document.getElementById('clearConverter').addEventListener('click', () => { decInp.value = ''; binInp.value = ''; hexInp.value = ''; stepsDiv.innerHTML = '✨ Cleared'; });
-    historyDiv.addEventListener('click', (e) => { if (e.target.classList.contains('history-item')) { let m = e.target.textContent.match(/[\d]+\.?\d*/); if (m) { decInp.value = m[0]; updateAllFromDecimal('dec'); } } });
-    window.addEventListener('load', () => { renderHistory(); if (decInp.value) updateAllFromDecimal('dec'); updateIEEE754(); });
-
-    // --- Enhanced Interactive Particle Constellation ---
-    const canvas = document.getElementById('particleCanvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let mouse = { x: null, y: null, radius: 120 };
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.45;
-        this.vy = (Math.random() - 0.5) * 0.45;
-        this.size = Math.random() * 2.5 + 0.9;
-      }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = '#ce93d8';
-        ctx.shadowColor = '#ea80fc';
-        ctx.shadowBlur = 9;
-        ctx.fill();
-      }
-    }
-
-    function initParticles(count = 100) {
-      particles = [];
-      for (let i = 0; i < count; i++) particles.push(new Particle());
-    }
-    initParticles();
-
-    window.addEventListener('mousemove', (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-    window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
-
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        for (let j = i + 1; j < particles.length; j++) {
-          let dx = particles[i].x - particles[j].x;
-          let dy = particles[i].y - particles[j].y;
-          let dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 115) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(206, 147, 216, ${0.14 * (1 - dist/115)})`;
-            ctx.lineWidth = 0.75;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-        if (mouse.x && mouse.y) {
-          let dx = particles[i].x - mouse.x;
-          let dy = particles[i].y - mouse.y;
-          let dist = Math.sqrt(dx*dx+dy*dy);
-          if (dist < 150) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(234, 128, 252, ${0.22 * (1 - dist/150)})`;
-            ctx.lineWidth = 1;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.stroke();
-          }
+        for (let i = 0; i < columns; i++) {
+          drops[i] = Math.floor(Math.random() * -height / fontSize);
         }
       }
-      requestAnimationFrame(animateParticles);
-    }
-    animateParticles();
-  })();
-</script>
+
+      function drawMatrix() {
+        ctx.fillStyle = 'rgba(3, 3, 5, 0.05)';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = '#b44dff';
+        ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+          const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+
+          // تدرج الألوان من الأرجواني إلى السماوي
+          const gradient = ctx.createLinearGradient(x, y - fontSize, x, y);
+          gradient.addColorStop(0, 'rgba(180, 77, 255, 0.1)');
+          gradient.addColorStop(0.5, 'rgba(224, 64, 251, 0.7)');
+          gradient.addColorStop(1, 'rgba(77, 208, 225, 0.9)');
+          ctx.fillStyle = gradient;
+          ctx.fillText(char, x, y);
+
+          // تحديث الموقع
+          if (y > height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+        requestAnimationFrame(drawMatrix);
+      }
+
+      // تهيئة وتشغيل Matrix Rain
+      initMatrix();
+      drawMatrix();
+
+      // إعادة التهيئة عند تغيير حجم النافذة
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          initMatrix();
+        }, 200);
+      });
+
+      // --- باقي الكود (المحول، IEEE754، العمليات الحسابية، التاريخ) ---
+      const decInp = document.getElementById('decInput');
+      const binInp = document.getElementById('binInput');
+      const hexInp = document.getElementById('hexInput');
+      const stepsDiv = document.getElementById('conversionSteps');
+      const historyDiv = document.getElementById('historyList');
+
+      const ieeeInput = document.getElementById('ieeeInput');
+      const ieee32Hex = document.getElementById('ieee32Hex');
+      const ieee32Bits = document.getElementById('ieee32Bits');
+      const ieee64Hex = document.getElementById('ieee64Hex');
+
+      const opA = document.getElementById('operandA');
+      const opB = document.getElementById('operandB');
+      const opSelect = document.getElementById('arithmeticOp');
+      const arithResultSpan = document.getElementById('arithResult');
+      const arithStepsDiv = document.getElementById('arithSteps');
+
+      const parseDecimal = (str) => {
+        if (!str || str.trim() === '') return NaN;
+        return parseFloat(str.trim());
+      };
+
+      const decToBin = (decNum) => {
+        if (isNaN(decNum)) return { bin: 'Invalid', steps: '' };
+        const sign = decNum < 0 ? '-' : '';
+        let num = Math.abs(decNum);
+        let intPart = Math.floor(num);
+        let fracPart = num - intPart;
+        let binInt = intPart === 0 ? '0' : '';
+        let tempInt = intPart;
+        while (tempInt > 0) {
+          binInt = (tempInt % 2) + binInt;
+          tempInt = Math.floor(tempInt / 2);
+        }
+        let binFrac = '';
+        let tempFrac = fracPart;
+        let maxIter = 20;
+        while (tempFrac > 0 && binFrac.length < maxIter) {
+          tempFrac *= 2;
+          let bit = Math.floor(tempFrac);
+          binFrac += bit;
+          tempFrac -= bit;
+        }
+        let result = sign + binInt;
+        if (fracPart > 0 || binFrac.length > 0) result += '.' + (binFrac || '0');
+        const steps = `Integer ${intPart} → ${binInt} | Fraction 0.${fracPart.toString().substring(2,6)} → 0.${binFrac}`;
+        return { bin: result, steps };
+      };
+
+      const binToDec = (binStr) => {
+        if (!/^[01]+(\.[01]+)?$/.test(binStr.trim())) return NaN;
+        let parts = binStr.split('.');
+        let intPart = parts[0];
+        let fracPart = parts[1] || '';
+        let dec = 0;
+        for (let i = 0; i < intPart.length; i++) {
+          if (intPart[i] === '1') dec += Math.pow(2, intPart.length - 1 - i);
+        }
+        for (let i = 0; i < fracPart.length; i++) {
+          if (fracPart[i] === '1') dec += Math.pow(2, -(i+1));
+        }
+        return dec;
+      };
+
+      const decToHex = (decNum) => {
+        if (isNaN(decNum)) return 'Invalid';
+        let sign = decNum < 0 ? '-' : '';
+        let num = Math.abs(decNum);
+        let intPart = Math.floor(num);
+        let fracPart = num - intPart;
+        let hexInt = intPart === 0 ? '0' : '';
+        let tempInt = intPart;
+        while (tempInt > 0) {
+          let rem = tempInt % 16;
+          hexInt = (rem < 10 ? rem : String.fromCharCode(87 + rem)) + hexInt;
+          tempInt = Math.floor(tempInt / 16);
+        }
+        let hexFrac = '';
+        let temp = fracPart;
+        let maxIter = 12;
+        while (temp > 0 && hexFrac.length < maxIter) {
+          temp *= 16;
+          let digit = Math.floor(temp);
+          hexFrac += (digit < 10 ? digit : String.fromCharCode(87 + digit));
+          temp -= digit;
+        }
+        let result = sign + hexInt;
+        if (fracPart > 0 || hexFrac.length > 0) result += '.' + (hexFrac || '0');
+        return result;
+      };
+
+      const hexToDec = (hexStr) => {
+        if (!/^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(hexStr.trim())) return NaN;
+        let parts = hexStr.split('.');
+        let intPart = parts[0].toLowerCase();
+        let fracPart = parts[1] || '';
+        let dec = 0;
+        for (let i = 0; i < intPart.length; i++) {
+          let val = parseInt(intPart[i], 16);
+          dec += val * Math.pow(16, intPart.length - 1 - i);
+        }
+        for (let i = 0; i < fracPart.length; i++) {
+          let val = parseInt(fracPart[i], 16);
+          dec += val * Math.pow(16, -(i+1));
+        }
+        return dec;
+      };
+
+      const updateIEEE754 = () => {
+        let val = parseDecimal(ieeeInput.value);
+        if (isNaN(val)) {
+          ieee32Hex.textContent = 'Invalid';
+          ieee32Bits.innerHTML = '<span class="bit-field">—</span>';
+          ieee64Hex.textContent = 'Invalid';
+          return;
+        }
+        const buffer32 = new ArrayBuffer(4);
+        const view32 = new DataView(buffer32);
+        view32.setFloat32(0, val, false);
+        let int32 = view32.getUint32(0, false);
+        let hex32 = '0x' + int32.toString(16).toUpperCase().padStart(8, '0');
+        let bin32 = int32.toString(2).padStart(32, '0');
+        ieee32Hex.textContent = hex32;
+        ieee32Bits.innerHTML = `<span style="color:#f8bbd0;">S:${bin32[0]}</span> <span style="color:#81d4fa;">E:${bin32.slice(1,9)}</span> <span style="color:#ce93d8;">M:${bin32.slice(9)}</span>`;
+        const buffer64 = new ArrayBuffer(8);
+        const view64 = new DataView(buffer64);
+        view64.setFloat64(0, val, false);
+        let high32 = view64.getUint32(0, false);
+        let low32 = view64.getUint32(4, false);
+        ieee64Hex.textContent = '0x' + high32.toString(16).toUpperCase().padStart(8, '0') + low32.toString(16).toUpperCase().padStart(8, '0');
+      };
+
+      const addToHistory = (entry) => {
+        let stored = JSON.parse(localStorage.getItem('bitmatrixHistory') || '[]');
+        stored.unshift(entry);
+        if (stored.length > 12) stored.pop();
+        localStorage.setItem('bitmatrixHistory', JSON.stringify(stored));
+        renderHistory();
+      };
+
+      const renderHistory = () => {
+        let stored = JSON.parse(localStorage.getItem('bitmatrixHistory') || '[]');
+        historyDiv.innerHTML = stored.length ? stored.map(e => `<div class="history-item">${e}</div>`).join('') : '<div class="history-item">✨ No history yet</div>';
+      };
+
+      const updateAllFromDecimal = (source = 'dec') => {
+        let decVal = parseDecimal(decInp.value);
+        if (isNaN(decVal)) {
+          if (source !== 'dec') decInp.value = '';
+          binInp.value = ''; hexInp.value = '';
+          stepsDiv.innerHTML = '⛔ Invalid decimal number';
+          return;
+        }
+        let binObj = decToBin(decVal);
+        binInp.value = binObj.bin;
+        hexInp.value = decToHex(decVal);
+        stepsDiv.innerHTML = `🔹 ${decVal}₁₀ → ${binObj.bin}₂ → ${hexInp.value}₁₆<br>📐 ${binObj.steps}`;
+        addToHistory(`${decVal} → ${binObj.bin}₂`);
+      };
+
+      const updateFromBinary = () => {
+        let binStr = binInp.value.trim();
+        let dec = binToDec(binStr);
+        if (isNaN(dec)) { decInp.value = ''; hexInp.value = ''; stepsDiv.innerHTML = '❌ Invalid binary'; return; }
+        decInp.value = dec; hexInp.value = decToHex(dec);
+        stepsDiv.innerHTML = `📌 ${binStr}₂ → ${dec}₁₀ → ${hexInp.value}₁₆`;
+        addToHistory(`${binStr}₂ → ${dec}`);
+      };
+
+      const updateFromHex = () => {
+        let hexStr = hexInp.value.trim();
+        let dec = hexToDec(hexStr);
+        if (isNaN(dec)) { decInp.value = ''; binInp.value = ''; stepsDiv.innerHTML = '❌ Invalid hex'; return; }
+        decInp.value = dec; binInp.value = decToBin(dec).bin;
+        stepsDiv.innerHTML = `🧪 ${hexStr}₁₆ → ${dec}₁₀ → ${binInp.value}₂`;
+        addToHistory(`${hexStr}₁₆ → ${dec}`);
+      };
+
+      const performArithmetic = () => {
+        let aStr = opA.value.trim(), bStr = opB.value.trim(), op = opSelect.value;
+        if (!aStr || !bStr) { arithResultSpan.textContent = '—'; arithStepsDiv.innerHTML = '⚠️ Enter both operands'; return; }
+        let isBin = /^[01]+(\.[01]+)?$/.test(aStr) && /^[01]+(\.[01]+)?$/.test(bStr);
+        let isHex = /^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(aStr) && /^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(bStr);
+        if (!isBin && !isHex) { arithStepsDiv.innerHTML = '❌ Must be binary or hex'; return; }
+        let decA = isBin ? binToDec(aStr) : hexToDec(aStr);
+        let decB = isBin ? binToDec(bStr) : hexToDec(bStr);
+        if (isNaN(decA) || isNaN(decB)) { arithStepsDiv.innerHTML = 'Invalid format'; return; }
+        let resultDec;
+        switch(op) {
+          case '+': resultDec = decA + decB; break;
+          case '-': resultDec = decA - decB; break;
+          case '*': resultDec = decA * decB; break;
+          case '/': if (decB === 0) { arithResultSpan.textContent = 'Div/0'; return; } resultDec = decA / decB; break;
+        }
+        if (!isFinite(resultDec)) { arithResultSpan.textContent = 'Error'; return; }
+        let resultStr = isBin ? decToBin(resultDec).bin : decToHex(resultDec);
+        arithResultSpan.textContent = resultStr;
+        arithStepsDiv.innerHTML = `🧮 ${aStr} ${op} ${bStr} = ${resultDec}₁₀ → ${resultStr}`;
+      };
+
+      decInp.addEventListener('input', () => updateAllFromDecimal('dec'));
+      binInp.addEventListener('input', updateFromBinary);
+      hexInp.addEventListener('input', updateFromHex);
+      ieeeInput.addEventListener('input', updateIEEE754);
+      document.getElementById('computeArithBtn').addEventListener('click', performArithmetic);
+      document.getElementById('clearHistory').addEventListener('click', () => { localStorage.removeItem('bitmatrixHistory'); renderHistory(); });
+      document.getElementById('clearConverter').addEventListener('click', () => { decInp.value = ''; binInp.value = ''; hexInp.value = ''; stepsDiv.innerHTML = '✨ Cleared'; });
+      historyDiv.addEventListener('click', (e) => { if (e.target.classList.contains('history-item')) { let m = e.target.textContent.match(/[\d]+\.?\d*/); if (m) { decInp.value = m[0]; updateAllFromDecimal('dec'); } } });
+      window.addEventListener('load', () => { renderHistory(); if (decInp.value) updateAllFromDecimal('dec'); updateIEEE754(); });
+    })();
+  </script>
 </body>
 </html>
