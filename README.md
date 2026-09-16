@@ -1,301 +1,119 @@
-# 🧮 BitMatrix · MC88 — Convertisseur de Bases & IEEE 754
+<div align="center">
 
-**BitMatrix** est un convertisseur radical de bases numériques (décimal, binaire, hexadécimal) avec un calculateur **IEEE 754** complet (simple et double précision) et des opérations arithmétiques en binaire/hexadécimal. L'interface cyber-luxueuse avec pluie de matrice animée fonctionne entièrement dans votre navigateur.
+# 🧮 BitMatrix — MC88
 
----
+**Voir les nombres sous toutes leurs formes.**
 
-## 📋 Prérequis
-
-1. Un navigateur web moderne (Chrome, Firefox, Edge, Safari, Brave, Opera)
-2. Aucune connexion Internet requise après le chargement initial
-3. Aucune installation de logiciel nécessaire
+</div>
 
 ---
 
-## 🚀 Guide d'installation
+## 👋 Bienvenue
 
-### Étape 1 : Télécharger le fichier
-1. Téléchargez le fichier `bitmatrix.html` sur votre ordinateur
-2. Placez-le dans un dossier de votre choix (ex : `C:\BitMatrix\`)
+BitMatrix est un petit atelier pour ceux qui aiment comprendre ce qui se passe vraiment sous le capot d'un nombre.
 
-### Étape 2 : Lancer l'application
-- **Méthode simple** : Double-cliquez sur le fichier
-- **Méthode alternative** : Faites un clic droit → « Ouvrir avec » → choisissez votre navigateur
+Vous entrez une valeur — dans n'importe quelle base — et vous la voyez apparaître sous toutes ses autres formes : binaire, hexadécimal, décimal. Vous voulez savoir comment un ordinateur stocke `5.75` en mémoire ? Le calculateur IEEE 754 vous le montre, bit par bit. Vous voulez additionner deux nombres en binaire, à la main ? L'outil le fait pour vous, et vous montre chaque étape.
+
+Tout fonctionne dans votre navigateur. Pas d'installation, pas de serveur, pas de compte. Vous ouvrez, vous explorez, vous fermez.
 
 ---
 
-## 🎯 Fonctionnalités principales
+## 📸 Un aperçu
 
-### 🔷 1. Convertisseur Universel
+<div align="center">
+  <img src="https://github.com/mohamed005cheikh-rgb/bm-mc88/raw/main/images/Sc1.png" alt="Convertisseur universel de bases" width="100%" />
+</div>
 
-Convertit instantanément entre trois bases numériques :
-- **Décimal** (base 10) : ex. `10.625`
-- **Binaire** (base 2) : ex. `1010.101`
-- **Hexadécimal** (base 16) : ex. `A.A`
+<br />
 
-**Conversion automatique :**
-- Saisissez dans n'importe quel champ → les deux autres se mettent à jour
-- Les **étapes de conversion** sont affichées en temps réel
-- Supporte les nombres fractionnaires (partie décimale)
+<div align="center">
+  <img src="https://github.com/mohamed005cheikh-rgb/bm-mc88/raw/main/images/Sc2.png" alt="Calculateur IEEE 754" width="100%" />
+</div>
 
-**Méthode de conversion binaire :**
-1. Partie entière : divisions successives par 2
-2. Partie fractionnaire : multiplications successives par 2
-3. Limite : 20 bits pour la partie fractionnaire
+<br />
 
----
+<div align="center">
+  <img src="https://github.com/mohamed005cheikh-rgb/bm-mc88/raw/main/images/Sr1.gif" alt="Convertir un nombre entre bases" width="100%" />
+</div>
 
-### 🧮 2. Calculateur IEEE 754
+<br />
 
-Convertit un nombre réel en sa représentation binaire flottante :
-
-**Simple précision (32 bits) :**
-| Composant | Bits | Description |
-|-----------|------|-------------|
-| **Signe (S)** | 1 bit | 0 = positif, 1 = négatif |
-| **Exposant (E)** | 8 bits | Biais de 127 |
-| **Mantisse (M)** | 23 bits | Partie fractionnaire normalisée |
-
-**Double précision (64 bits) :**
-| Composant | Bits | Description |
-|-----------|------|-------------|
-| **Signe (S)** | 1 bit | 0 = positif, 1 = négatif |
-| **Exposant (E)** | 11 bits | Biais de 1023 |
-| **Mantisse (M)** | 52 bits | Partie fractionnaire normalisée |
-
-**Affichage :**
-- Valeur hexadécimale 32 bits : `0x40B80000`
-- Valeur hexadécimale 64 bits : `0x4017000000000000`
-- Décomposition visuelle : S | E | M avec couleurs distinctes
-
-**Exemple :**
-- Entrée : `5.75`
-- 32 bits : `0x40B80000`
-- Décomposition : `S:0 E:10000001 M:01110000000000000000000`
+<div align="center">
+  <img src="https://github.com/mohamed005cheikh-rgb/bm-mc88/raw/main/images/Sr2.gif" alt="Calculer en binaire et en hexadécimal" width="100%" />
+</div>
 
 ---
 
-### ⚙️ 3. Opérations Arithmétiques
+## ✨ Ce que vous trouverez
 
-Effectue des calculs directement en binaire ou hexadécimal :
+**Convertir, dans les trois sens.**  
+Vous tapez `10.625` en décimal, et vous voyez aussitôt `1010.101` en binaire et `A.A` en hexadécimal. Vous tapez dans n'importe quel champ — les deux autres se mettent à jour tout seuls. Les nombres à virgule sont acceptés, et les **étapes du calcul** s'affichent pour que vous compreniez d'où vient chaque chiffre.
 
-**Opérations supportées :**
-- **Addition** (+)
-- **Soustraction** (−)
-- **Multiplication** (×)
-- **Division** (÷)
+**Voir un nombre flottant, bit par bit.**  
+Entrez `5.75`, et l'outil vous montre comment il est réellement stocké en mémoire — en simple précision (32 bits) comme en double précision (64 bits). Le signe, l'exposant, la mantisse : chacun affiché séparément, avec sa valeur hexadécimale complète (`0x40B80000` pour `5.75` en 32 bits). Une façon limpide de comprendre la norme IEEE 754 sans se perdre dans un manuel.
 
-**Fonctionnement :**
-1. Saisissez deux opérandes (binaire ou hexadécimal)
-2. Choisissez l'opérateur
-3. Cliquez sur `=`
-4. Le résultat s'affiche dans la même base
+**Calculer directement en binaire et en hexadécimal.**  
+Addition, soustraction, multiplication, division — sur des nombres écrits en base 2 ou en base 16. Vous entrez les deux opérandes, vous choisissez l'opérateur, et le résultat s'affiche dans la même base, avec les étapes détaillées. Plus besoin de repasser par le décimal pour vérifier un calcul.
 
-**Exemple :**
-- `1010.1 + 10.1 = 1101.0` (binaire)
-- `A.F + 1.1 = C.0` (hexadécimal)
+**Un historique qui se souvient.**  
+Vos douze dernières conversions restent dans la barre latérale, prêtes à être rechargées d'un clic. Vous pouvez les comparer, y revenir plus tard, ou tout effacer d'un seul bouton.
 
-**Gestion des erreurs :**
-- Division par zéro → message d'erreur
-- Format invalide → message d'avertissement
+**Une ambiance qui invite à jouer.**  
+Une pluie de matrice animée en arrière-plan, une palette améthyste, des lueurs discrètes — l'outil est aussi agréable à regarder qu'à utiliser. Et sur mobile, tout s'allège automatiquement pour rester fluide.
 
 ---
 
-### 📋 4. Historique des conversions
+## 🧭 Comment ça marche
 
-- Les **12 dernières conversions** sont sauvegardées
-- Stockage local persistant (survit au rechargement)
-- **Cliquez** sur un élément pour le recharger
-- Bouton **Clear** pour effacer l'historique
+**1. Convertir un nombre.**  
+Cherchez la section *Universal Converter*. Tapez votre valeur dans le champ qui vous arrange — décimal, binaire ou hexadécimal. Les autres se remplissent immédiatement, et les étapes apparaissent juste en dessous.
 
----
+**2. Explorer un flottant.**  
+Dans la section *IEEE 754*, entrez un nombre réel (positif ou négatif). Vous obtenez aussitôt sa représentation 32 bits et 64 bits, avec la décomposition Signe / Exposant / Mantisse colorée pour bien distinguer chaque partie.
 
-## 📖 Guide d'utilisation détaillé
+**3. Faire une opération.**  
+Dans la section *Arithmetic*, entrez le premier opérande, choisissez l'opérateur, entrez le second, et cliquez sur `=`. Le résultat s'affiche dans la même base que vos entrées, accompagné des étapes de calcul.
 
-### 🔹 Étape 1 : Convertir un nombre
+**4. Retrouver une conversion.**  
+Cliquez sur n'importe quelle entrée de l'historique pour la recharger dans le convertisseur. Le bouton *Clear* vide la liste quand vous voulez repartir à zéro.
 
-1. Repérez la section **« Universal Converter »**
-2. Saisissez votre nombre dans l'un des trois champs :
-   - **Decimal** : `10.625`
-   - **Binary** : `1010.101`
-   - **Hexadecimal** : `A.A`
-3. Les deux autres champs se remplissent automatiquement
-4. Les **étapes de conversion** s'affichent en dessous
-
-### 🔹 Étape 2 : Calculer IEEE 754
-
-1. Repérez la section **« IEEE 754 Floating-Point »**
-2. Saisissez un nombre réel (ex. `5.75` ou `-12.625`)
-3. Les résultats s'affichent instantanément :
-   - Valeur hexadécimale 32 bits
-   - Décomposition Signe/Exposant/Mantisse
-   - Valeur hexadécimale 64 bits
-
-### 🔹 Étape 3 : Effectuer une opération
-
-1. Repérez la section **« Arithmetic (Bin / Hex) »**
-2. Saisissez le premier opérande
-3. Choisissez l'opérateur (+, −, ×, ÷)
-4. Saisissez le second opérande
-5. Cliquez sur `=`
-6. Le résultat et les étapes s'affichent
-
-### 🔹 Étape 4 : Utiliser l'historique
-
-- Les conversions récentes apparaissent dans la barre latérale
-- Cliquez sur un élément pour le recharger dans le convertisseur
-- Utilisez **Clear** pour vider l'historique
+C'est tout. L'outil ne demande rien, ne garde rien ailleurs, et ne vous impose aucune étape inutile.
 
 ---
 
-## 🛠️ Guide de dépannage
+## 🛠️ Petits coups de main
 
-### Problème 1 : « Invalid decimal number »
+**« Invalid decimal number » ?**  
+Vérifiez que vous n'avez utilisé que des chiffres et un point décimal. La virgule n'est pas acceptée — c'est `10.625`, pas `10,625`.
 
-**Cause** : Le nombre décimal contient des caractères non numériques.
+**« Invalid binary » ?**  
+En binaire, il n'existe que deux chiffres : `0` et `1`. Si vous voyez un `2`, c'est qu'il y a un problème.
 
-**Solution** :
-- Utilisez uniquement des chiffres (0-9) et un point décimal
-- Exemple valide : `10.625`
-- Exemple invalide : `10,625` (virgule au lieu du point)
+**« Invalid hex » ?**  
+En hexadécimal, on va de `0` à `9`, puis de `A` à `F`. Les lettres `G` et au-delà n'existent pas dans cette base.
 
----
+**Le résultat IEEE 754 affiche *Invalid* ?**  
+Vérifiez que votre entrée est bien un nombre réel — par exemple `5.75` ou `-12.625`. Les caractères spéciaux ne sont pas acceptés.
 
-### Problème 2 : « Invalid binary »
+**L'historique disparaît ?**  
+En navigation privée, le stockage local est désactivé — c'est normal. En fenêtre normale, vos conversions restent tant que vous ne videz pas le cache.
 
-**Cause** : Le nombre binaire contient des chiffres autres que 0 et 1.
-
-**Solution** :
-- Utilisez uniquement `0` et `1`
-- Exemple valide : `1010.101`
-- Exemple invalide : `1020.101`
+**La pluie de matrice ralentit l'appareil ?**  
+Sur mobile, l'animation s'allège automatiquement. Si cela reste gênant, fermez les autres onglets gourmands — ou laissez l'onglet ouvert sans y toucher, il se calme tout seul.
 
 ---
 
-### Problème 3 : « Invalid hex »
+<div align="center">
 
-**Cause** : Le nombre hexadécimal contient des caractères hors de 0-9 et A-F.
+### 📞 Une question, une idée ?
 
-**Solution** :
-- Utilisez uniquement `0-9` et `A-F` (ou `a-f`)
-- Exemple valide : `A.F`
-- Exemple invalide : `G.5`
+[![Email](https://img.shields.io/badge/Email-mohamed005cheikh@gmail.com-d14836?style=flat-square&logo=gmail&logoColor=white)](mailto:mohamed005cheikh@gmail.com)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-+222_30_72_64_75-25D366?style=flat-square&logo=whatsapp&logoColor=white)](https://wa.me/22230726475)
 
----
+<br />
 
-### Problème 4 : Division par zéro
+*Bonnes conversions.*
 
-**Cause** : Le second opérande est égal à zéro.
+<sub>© 2026 Mohamed Cheikh — MC88</sub>
 
-**Solution** :
-- Vérifiez que le diviseur n'est pas zéro
-- En binaire : `0` ou `0.0`
-- En hexadécimal : `0` ou `0.0`
-
----
-
-### Problème 5 : Le résultat IEEE 754 est « Invalid »
-
-**Cause** : Le nombre saisi n'est pas un nombre réel valide.
-
-**Solution** :
-- Utilisez un nombre décimal valide (ex. `5.75`)
-- Évitez les caractères spéciaux
-- Accepte les nombres négatifs (ex. `-12.625`)
-
----
-
-### Problème 6 : L'historique ne se sauvegarde pas
-
-**Cause** : Le stockage local est désactivé ou en navigation privée.
-
-**Solution** :
-- Vérifiez que le stockage local est activé
-- En navigation privée, l'historique sera réinitialisé
-- C'est un comportement normal
-
----
-
-### Problème 7 : La pluie de matrice ralentit l'appareil
-
-**Cause** : L'animation canvas consomme des ressources sur les appareils anciens.
-
-**Solution** :
-- L'opacité est réduite automatiquement sur mobile (0.25)
-- Sur mobile, la taille de police est réduite
-- Fermez les autres onglets gourmands
-
----
-
-## 📊 Exemples de conversion
-
-### Exemple 1 : Décimal → Binaire → Hexadécimal
-
-**Entrée :** `10.625` (décimal)
-
-**Résultat :**
-- Binaire : `1010.101`
-- Hexadécimal : `A.A`
-
-**Étapes :**
-- Partie entière : `10₁₀ = 1010₂`
-- Partie fractionnaire : `0.625₁₀ = 0.101₂`
-- Hexadécimal : `10₁₀ = A₁₆`, `0.625₁₀ = 0.A₁₆`
-
----
-
-### Exemple 2 : IEEE 754 Simple Précision
-
-**Entrée :** `5.75`
-
-**Résultat :**
-- Hex 32 bits : `0x40B80000`
-- Signe : `0` (positif)
-- Exposant : `10000001` (129 - 127 = 2)
-- Mantisse : `01110000000000000000000`
-
-**Vérification :**
-`(-1)⁰ × 1.0111₂ × 2² = 1.4375 × 4 = 5.75`
-
----
-
-### Exemple 3 : Arithmétique Binaire
-
-**Entrée :** `1010.1 + 10.1`
-
-**Résultat :**
-- Décimal : `10.5 + 2.5 = 13.0`
-- Binaire : `1101.0`
-
----
-
-## 📄 Copyright
-
-**© 2026**  
-📧 mohamed005cheikh@gmail.com  
-**Créé par MC**  
-**Tous droits réservés**
-
----
-
-## 🔗 Formules techniques
-
-### Conversion Décimal → Binaire (fractionnaire)
----
-
-## ✅ Fonctionnalités techniques
-
-- **Conversion bidirectionnelle** entre 3 bases
-- **Étapes de conversion** détaillées en temps réel
-- **IEEE 754** simple et double précision
-- **Arithmétique** en binaire et hexadécimal
-- **Historique persistant** (12 entrées)
-- **Pluie de matrice** animée en arrière-plan
-- **Design responsive** mobile-first
-- **Glassmorphism** avec effets de flou
-- **Effets de lueur** néon améthyste
-- **Défilement personnalisé** avec lueur violette
-
----
-
-**Bonnes conversions ! 🧮✨**
+</div>
