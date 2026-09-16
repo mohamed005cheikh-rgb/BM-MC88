@@ -16,7 +16,8 @@ Vous entrez une valeur — dans n'importe quelle base — et vous la voyez appar
 
 Tout fonctionne dans votre navigateur. Pas d'installation, pas de serveur, pas de compte. Vous ouvrez, vous explorez, vous fermez.
 
----
+--- 
+<!-- 
 
 ## 📸 Un aperçu
 
@@ -43,7 +44,7 @@ Tout fonctionne dans votre navigateur. Pas d'installation, pas de serveur, pas d
 </div>
 
 ---
-
+-->
 ## ✨ Ce que vous trouverez
 
 **Convertir, dans les trois sens.**  
