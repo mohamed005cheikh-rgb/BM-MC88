@@ -1,936 +1,1845 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>BitMatrix · MC88 | radical base & IEEE 754 converter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#05040a"/>
+<title>BitMatrix · MC88 — Base &amp; IEEE 754 Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BitMatrix · MC88  —  design tokens
+   ============================================================ */
+:root{
+  --bg:#05040a;
+  --panel:rgba(20,15,38,.66);
+  --panel-2:rgba(10,7,20,.62);
+  --stroke:rgba(148,108,255,.15);
+  --stroke-2:rgba(148,108,255,.28);
+  --purple:#a855f7;
+  --purple-d:#7c3aed;
+  --magenta:#e879f9;
+  --cyan:#22d3ee;
+  --rose:#fb7185;
+  --mint:#34d399;
+  --text:#ece9ff;
+  --muted:#8a83a8;
+  --muted-2:#5d5678;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans:'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --pop:cubic-bezier(.34,1.56,.64,1);
+  --r-lg:22px;
+  --r-md:15px;
+  --r-sm:10px;
+}
 
-    :root {
-      --bg-deep: #030305;
-      --glass-bg: rgba(12, 8, 24, 0.5);
-      --glass-border: rgba(180, 130, 255, 0.22);
-      --glow-primary: #b44dff;
-      --glow-magenta: #e040fb;
-      --glow-cyan: #4dd0e1;
-      --text-primary: #f3e5ff;
-      --text-secondary: #b39ddb;
-      --text-highlight: #e0f7fa;
-      --card-elevation: 0 25px 45px -12px rgba(0, 0, 0, 0.95);
-      --border-glow: 1px solid rgba(180, 100, 255, 0.35);
-      --scrollbar-thumb: #6a1b9a;
-      --scrollbar-track: #0a0812;
-    }
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  min-height:100dvh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
 
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-deep);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.8rem;
-      margin: 0;
-      color: var(--text-primary);
-      position: relative;
-      overflow-x: hidden;
-    }
+/* ---------- background layers (cheap, no filters) ---------- */
+#bg{
+  position:fixed;inset:0;
+  width:100%;height:100%;
+  z-index:0;
+  opacity:.5;
+  pointer-events:none;
+}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 38%, transparent 0%, rgba(5,4,10,.72) 78%),
+    linear-gradient(180deg, rgba(5,4,10,.85) 0%, transparent 22%, transparent 76%, rgba(5,4,10,.9) 100%);
+}
+.glow{
+  position:fixed;z-index:0;pointer-events:none;border-radius:50%;
+  will-change:transform;
+}
+.glow.a{
+  width:min(760px,110vw);height:min(760px,110vw);
+  top:-38vw;left:-24vw;
+  background:radial-gradient(circle, rgba(124,58,237,.22) 0%, rgba(124,58,237,0) 62%);
+  animation:drift1 26s ease-in-out infinite;
+}
+.glow.b{
+  width:min(680px,100vw);height:min(680px,100vw);
+  bottom:-34vw;right:-22vw;
+  background:radial-gradient(circle, rgba(34,211,238,.15) 0%, rgba(34,211,238,0) 62%);
+  animation:drift2 32s ease-in-out infinite;
+}
+@keyframes drift1{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(5vw,4vh,0) scale(1.08)}
+}
+@keyframes drift2{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(-5vw,-4vh,0) scale(1.1)}
+}
 
-    /* --- Matrix Rain Background --- */
-    #matrixCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.35;
-    }
+/* ---------- shell ---------- */
+.shell{
+  position:relative;z-index:2;
+  width:100%;max-width:1240px;
+  margin:0 auto;
+  padding:clamp(12px,2.4vw,22px) clamp(12px,2.6vw,24px) 24px;
+  display:flex;flex-direction:column;
+  gap:clamp(12px,1.8vw,18px);
+  min-height:100vh;
+  min-height:100dvh;
+}
 
-    ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--scrollbar-track);
-      border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--scrollbar-thumb);
-      border-radius: 10px;
-      box-shadow: inset 0 0 8px rgba(180, 77, 255, 0.5);
-    }
+/* ---------- topbar ---------- */
+.topbar{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 12px;
+  border:1px solid var(--stroke);
+  border-radius:var(--r-lg);
+  background:linear-gradient(180deg, rgba(26,19,48,.86), rgba(12,9,24,.82));
+  box-shadow:0 18px 40px -26px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.04);
+  position:sticky;top:10px;z-index:30;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;color:inherit;flex-shrink:0;
+}
+.logo-mark{
+  width:38px;height:38px;flex-shrink:0;
+  animation:logoSpin 14s ease-in-out infinite;
+  transform-origin:50% 50%;
+}
+@keyframes logoSpin{
+  0%,100%{transform:rotate(0) scale(1)}
+  50%{transform:rotate(180deg) scale(1.04)}
+}
+.brand-text{
+  font-weight:700;font-size:1.02rem;letter-spacing:-.01em;
+  white-space:nowrap;
+}
+.brand-text .grad{
+  background:linear-gradient(120deg,#c084fc,#e879f9 55%,#22d3ee);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.brand-text em{
+  font-style:normal;
+  font-family:var(--mono);
+  font-size:.6rem;font-weight:600;
+  letter-spacing:.18em;
+  color:var(--muted);
+  border:1px solid var(--stroke-2);
+  border-radius:6px;
+  padding:3px 6px;
+  margin-left:4px;
+  vertical-align:middle;
+}
 
-    .main-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 1420px;
-      position: relative;
-      z-index: 10;
-      gap: 1rem;
-    }
+.tabs{
+  position:relative;
+  display:flex;gap:2px;
+  margin-left:auto;
+  padding:4px;
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  background:rgba(6,4,14,.66);
+  overflow-x:auto;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab-indicator{
+  position:absolute;top:0;left:0;
+  border-radius:10px;
+  background:linear-gradient(135deg, rgba(124,58,237,.62), rgba(217,70,239,.42));
+  border:1px solid rgba(217,70,239,.42);
+  box-shadow:0 0 24px -6px rgba(168,85,247,.95), inset 0 1px 0 rgba(255,255,255,.12);
+  pointer-events:none;
+  transition:transform .42s var(--ease), width .42s var(--ease), height .42s var(--ease);
+}
+.tab{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 14px;
+  border:0;background:transparent;
+  border-radius:10px;
+  font-family:var(--sans);font-size:.76rem;font-weight:600;letter-spacing:.02em;
+  color:var(--muted);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:color .25s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.tab:hover{color:#cfc7ea}
+.tab.active{color:#fff}
+.tab .ic{width:15px;height:15px;opacity:.9}
 
-    .glass-app {
-      width: 100%;
-      background: rgba(8, 6, 18, 0.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 2.2rem;
-      border: 1px solid rgba(160, 110, 255, 0.25);
-      box-shadow: 0 35px 70px -20px rgba(0, 0, 0, 0.98), 0 0 0 1px rgba(180, 77, 255, 0.3);
-      overflow: hidden;
-      animation: fadeSlideUp 0.6s cubic-bezier(0.22, 0.98, 0.33, 1);
-    }
+.status{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid var(--stroke);
+  background:rgba(6,4,14,.6);
+  font-family:var(--mono);
+  font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);
+  flex-shrink:0;
+}
+.status .pulse{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--mint);
+  box-shadow:0 0 0 0 rgba(52,211,153,.7);
+  animation:pulseDot 2.2s ease-out infinite;
+}
+@keyframes pulseDot{
+  0%{box-shadow:0 0 0 0 rgba(52,211,153,.6)}
+  70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}
+  100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}
+}
 
-    @keyframes fadeSlideUp {
-      0% { opacity: 0; transform: translateY(30px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
+/* ---------- layout ---------- */
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 306px;
+  gap:clamp(12px,1.8vw,18px);
+  align-items:start;
+  flex:1;
+}
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+}
 
-    .glass-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 1.5rem;
-      background: rgba(6, 4, 18, 0.6);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(180, 120, 255, 0.35);
-      gap: 1rem;
-    }
+/* ---------- panels ---------- */
+.stage{position:relative;min-width:0}
+.panel{
+  display:none;
+  position:relative;
+  border:1px solid var(--stroke);
+  border-radius:var(--r-lg);
+  background:linear-gradient(180deg, rgba(24,18,46,.72), rgba(10,7,20,.72));
+  box-shadow:0 30px 60px -34px rgba(0,0,0,.98), inset 0 1px 0 rgba(255,255,255,.035);
+  padding:clamp(15px,2.4vw,24px);
+  overflow:hidden;
+}
+.panel.active{display:block;animation:panelIn .5s var(--ease) both}
+@keyframes panelIn{
+  from{opacity:0;transform:translateY(14px) scale(.994)}
+  to{opacity:1;transform:none}
+}
+.panel::before{
+  content:'';position:absolute;top:0;left:12%;right:12%;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(168,85,247,.75), transparent);
+  opacity:.8;
+}
+.panel + .panel{margin-top:0}
 
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+.panel-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:18px;
+}
+.panel-head .ic{width:19px;height:19px;color:var(--magenta);flex-shrink:0}
+.panel-head h2{
+  font-size:.98rem;font-weight:650;letter-spacing:-.01em;
+}
+.panel-head .sub{
+  margin-left:auto;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted-2);
+}
 
-    .glow-symbol {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 2.2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ea80fc, #b44dff, #7c4dff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      filter: drop-shadow(0 0 18px #b44dff);
-    }
+/* ---------- fields ---------- */
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px;
+}
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field > .label{
+  display:flex;align-items:center;gap:7px;
+  font-size:.63rem;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);
+}
+.field > .label .ic{width:13px;height:13px;flex-shrink:0}
+.lbl-dec .ic{color:var(--magenta)}
+.lbl-bin .ic{color:var(--cyan)}
+.lbl-hex .ic{color:var(--purple)}
+.lbl-ieee .ic{color:var(--mint)}
+.lbl-op .ic{color:var(--rose)}
 
-    .logo-text {
-      font-weight: 700;
-      letter-spacing: 0.8px;
-      color: #ede4ff;
-      text-shadow: 0 0 20px #7c4dff;
-      font-size: 1.3rem;
-    }
-    .logo-text span {
-      color: #ea80fc;
-    }
+.inp{
+  width:100%;
+  font-family:var(--mono);
+  font-size:.95rem;font-weight:500;
+  color:var(--text);
+  background:rgba(5,3,12,.72);
+  border:1px solid rgba(148,108,255,.16);
+  border-radius:var(--r-md);
+  padding:12px 14px;
+  outline:none;
+  letter-spacing:.02em;
+  transition:border-color .25s var(--ease), box-shadow .3s var(--ease), background .25s var(--ease);
+  -webkit-appearance:none;
+  appearance:none;
+  min-width:0;
+}
+.inp::placeholder{color:#403a58}
+.inp:hover{border-color:rgba(148,108,255,.3)}
+.inp:focus{
+  border-color:rgba(168,85,247,.8);
+  background:rgba(9,6,20,.94);
+  box-shadow:0 0 0 3px rgba(168,85,247,.13), 0 0 32px -8px rgba(168,85,247,.85);
+}
+.inp.bad{
+  border-color:rgba(251,113,133,.6);
+  box-shadow:0 0 0 3px rgba(251,113,133,.1);
+}
 
-    .nav-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      font-weight: 600;
-      color: #ceb0ff;
-    }
+/* ---------- console / steps ---------- */
+.console{
+  margin-top:16px;
+  border:1px solid rgba(148,108,255,.12);
+  border-radius:var(--r-md);
+  background:rgba(3,2,8,.6);
+  padding:13px 15px;
+  font-family:var(--mono);
+  font-size:.78rem;
+  display:flex;flex-direction:column;gap:9px;
+  min-height:74px;
+  position:relative;
+  overflow:hidden;
+}
+.console::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg, var(--magenta), var(--purple), var(--cyan));
+  opacity:.75;
+}
+.step{
+  display:flex;gap:12px;align-items:baseline;
+  animation:stepIn .4s var(--ease) both;
+}
+.step:nth-child(2){animation-delay:.05s}
+.step:nth-child(3){animation-delay:.1s}
+.step:nth-child(4){animation-delay:.15s}
+@keyframes stepIn{
+  from{opacity:0;transform:translateX(-7px)}
+  to{opacity:1;transform:none}
+}
+.step-k{
+  flex:0 0 44px;
+  font-size:.6rem;letter-spacing:.14em;
+  color:var(--muted-2);
+}
+.step-v{color:#ded7f7;word-break:break-all;line-height:1.55}
+.step.err .step-v{color:#fda4af}
+.step.ok  .step-v{color:#86efac}
 
-    .nav-links span {
-      cursor: pointer;
-      padding: 0.4rem 0.9rem;
-      border-radius: 3rem;
-      border: 1px solid rgba(180, 90, 255, 0.35);
-      transition: all 0.25s ease;
-      font-size: 0.75rem;
-      background: rgba(25, 10, 45, 0.4);
-      backdrop-filter: blur(8px);
-      letter-spacing: 0.4px;
-    }
+.hint{
+  display:flex;align-items:center;gap:9px;
+  color:var(--muted-2);
+  font-size:.75rem;
+}
+.hint .ic{width:15px;height:15px;flex-shrink:0;color:var(--purple);opacity:.8}
 
-    .nav-links span.active-nav,
-    .nav-links span:hover {
-      border-color: #e040fb;
-      background: rgba(180, 77, 255, 0.25);
-      color: #ffffff;
-      box-shadow: 0 0 25px rgba(224, 64, 251, 0.5);
-      transform: translateY(-2px);
-    }
+/* ---------- cards ---------- */
+.card{
+  border:1px solid rgba(148,108,255,.13);
+  border-radius:var(--r-lg);
+  background:linear-gradient(180deg, rgba(22,16,42,.55), rgba(8,6,18,.55));
+  padding:16px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .3s var(--ease), transform .3s var(--ease);
+}
+.card:hover{border-color:rgba(168,85,247,.3)}
+.card + .card{margin-top:14px}
+.card-head{
+  display:flex;align-items:center;gap:9px;
+  margin-bottom:13px;
+}
+.card-head .ic{width:16px;height:16px;color:var(--purple);flex-shrink:0}
+.card-head h3{
+  font-size:.76rem;font-weight:650;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:#cfc7ea;
+}
+.card-head .spacer{margin-left:auto}
+.card-head .tag{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;
+  color:var(--muted-2);text-transform:uppercase;
+}
 
-    .dashboard {
-      display: flex;
-      flex-wrap: wrap;
-      padding: 1.2rem 1.2rem 1.5rem;
-      gap: 1.5rem;
-    }
+/* ---------- chips / results ---------- */
+.chip{
+  display:inline-block;
+  font-family:var(--mono);
+  font-size:.85rem;
+  padding:8px 13px;
+  border-radius:var(--r-sm);
+  background:rgba(168,85,247,.12);
+  border:1px solid rgba(168,85,247,.28);
+  color:#f1ecff;
+  word-break:break-all;
+  transition:background .3s var(--ease);
+}
+.chip.cyan{background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.28);color:#a5f3fc}
+.chip.mint{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.28);color:#a7f3d0}
+.chip.flash{animation:chipFlash .85s var(--ease)}
+@keyframes chipFlash{
+  0%{background:rgba(232,121,249,.55);border-color:rgba(232,121,249,.9);transform:scale(1.015)}
+  100%{background:rgba(168,85,247,.12);border-color:rgba(168,85,247,.28);transform:none}
+}
 
-    .converter-panel {
-      flex: 2.2;
-      min-width: 260px;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
+.result-line{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.result-line .k{
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted-2);
+}
 
-    .glass-card {
-      background: rgba(14, 10, 28, 0.45);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-radius: 2rem;
-      padding: 1.2rem 1.3rem;
-      border: var(--border-glow);
-      box-shadow: var(--card-elevation);
-      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1), box-shadow 0.25s ease;
-    }
+/* ---------- bit viz ---------- */
+.bitviz{margin-top:14px}
+.bitviz-row{
+  display:flex;gap:3px;
+  font-family:var(--mono);
+  font-size:clamp(.5rem,1.55vw,.7rem);
+  letter-spacing:.05em;
+  overflow-x:auto;
+  scrollbar-width:none;
+  padding-bottom:2px;
+}
+.bitviz-row::-webkit-scrollbar{display:none}
+.bit{
+  padding:9px 7px;
+  border-radius:8px;
+  white-space:nowrap;
+  transition:transform .3s var(--pop), box-shadow .3s var(--ease);
+  cursor:default;
+}
+.bit:hover{transform:translateY(-3px);box-shadow:0 8px 20px -8px rgba(0,0,0,.9)}
+.bit.s{background:rgba(251,113,133,.14);border:1px solid rgba(251,113,133,.32);color:#fda4af}
+.bit.e{background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);color:#67e8f9}
+.bit.m{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);color:#d8b4fe}
+.bitviz-legend{
+  display:flex;gap:16px;flex-wrap:wrap;
+  margin-top:11px;
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted-2);
+}
+.bitviz-legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:9px;height:9px;border-radius:3px;display:inline-block}
+.sw.s{background:#fb7185}
+.sw.e{background:#22d3ee}
+.sw.m{background:#a855f7}
 
-    .glass-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 30px 50px -15px rgba(180, 77, 255, 0.3);
-    }
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(96px,1fr));
+  gap:9px;
+  margin-top:14px;
+}
+.metric{
+  background:rgba(3,2,8,.5);
+  border:1px solid rgba(148,108,255,.11);
+  border-radius:var(--r-sm);
+  padding:9px 11px;
+  display:flex;flex-direction:column;gap:3px;
+  min-width:0;
+}
+.metric span{
+  font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted-2);
+}
+.metric b{
+  font-family:var(--mono);font-size:.79rem;font-weight:600;
+  color:#ded7f7;word-break:break-all;
+}
 
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      margin-bottom: 0.8rem;
-    }
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--sans);font-size:.76rem;font-weight:600;letter-spacing:.03em;
+  padding:11px 18px;
+  border-radius:var(--r-md);
+  border:1px solid rgba(168,85,247,.3);
+  background:linear-gradient(180deg, rgba(58,32,108,.55), rgba(32,17,64,.55));
+  color:#e9e2ff;
+  cursor:pointer;
+  transition:transform .18s var(--pop), box-shadow .28s var(--ease),
+             border-color .28s var(--ease), background .28s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+  white-space:nowrap;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  border-color:rgba(232,121,249,.7);
+  box-shadow:0 12px 28px -14px rgba(168,85,247,.95);
+}
+.btn:active{transform:translateY(0) scale(.975)}
+.btn.primary{
+  background:linear-gradient(135deg,#7c3aed,#a855f7 48%,#d946ef);
+  border-color:transparent;
+  color:#fff;
+  box-shadow:0 12px 30px -14px rgba(168,85,247,1);
+}
+.btn.primary:hover{box-shadow:0 16px 36px -14px rgba(217,70,239,1)}
+.btn.ghost{
+  background:transparent;
+  border-color:rgba(148,108,255,.18);
+  color:var(--muted);
+  padding:9px 13px;
+  font-size:.7rem;
+}
+.btn.ghost:hover{color:var(--text);border-color:rgba(148,108,255,.4)}
+.btn .ic{width:15px;height:15px}
 
-    label {
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 0.6rem;
-      color: #b39ddb;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
+.iconbtn{
+  display:inline-grid;place-items:center;
+  width:30px;height:30px;
+  border-radius:9px;
+  border:1px solid rgba(148,108,255,.16);
+  background:rgba(6,4,14,.55);
+  color:var(--muted);
+  cursor:pointer;
+  transition:color .25s var(--ease), border-color .25s var(--ease),
+             background .25s var(--ease), transform .25s var(--pop);
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
+}
+.iconbtn:hover{color:#fff;border-color:rgba(168,85,247,.55);background:rgba(168,85,247,.15);transform:translateY(-1px)}
+.iconbtn .ic{width:14px;height:14px}
+.iconbtn.done{color:#86efac;border-color:rgba(52,211,153,.55);background:rgba(52,211,153,.14)}
 
-    .matrix-input {
-      background: rgba(8, 6, 22, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(180, 100, 255, 0.45);
-      border-radius: 1.3rem;
-      padding: 0.7rem 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #ede0ff;
-      outline: none;
-      transition: all 0.25s ease;
-      box-shadow: 0 0 15px rgba(140, 70, 255, 0.15);
-      width: 100%;
-      letter-spacing: 0.4px;
-    }
+/* ---------- arithmetic ---------- */
+.arith-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  gap:12px;
+  align-items:end;
+}
+@media (max-width:640px){
+  .arith-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+  .arith-grid .ops-field{order:3}
+}
+.op-btns{
+  display:flex;gap:4px;
+  padding:4px;
+  border:1px solid var(--stroke);
+  border-radius:var(--r-md);
+  background:rgba(6,4,14,.6);
+}
+.op-btns button{
+  width:42px;height:38px;
+  border:0;border-radius:9px;
+  background:transparent;
+  color:var(--muted);
+  font-family:var(--mono);font-size:1.02rem;font-weight:600;
+  cursor:pointer;
+  transition:all .25s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.op-btns button:hover{color:#fff;background:rgba(168,85,247,.18)}
+.op-btns button.active{
+  color:#fff;
+  background:linear-gradient(135deg, rgba(124,58,237,.85), rgba(217,70,239,.7));
+  box-shadow:0 6px 18px -8px rgba(168,85,247,1);
+  transform:translateY(-1px);
+}
 
-    .matrix-input:focus {
-      border-color: #e040fb;
-      box-shadow: 0 0 30px rgba(224, 64, 251, 0.6);
-      background: rgba(10, 8, 28, 0.85);
-      color: #ffffff;
-    }
+.seg{
+  display:inline-flex;gap:3px;
+  padding:3px;
+  border:1px solid var(--stroke);
+  border-radius:12px;
+  background:rgba(6,4,14,.6);
+}
+.seg button{
+  padding:7px 15px;
+  border:0;border-radius:9px;
+  background:transparent;
+  font-family:var(--mono);font-size:.68rem;font-weight:600;
+  letter-spacing:.1em;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .25s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.seg button:hover{color:#fff}
+.seg button.active{
+  color:#fff;
+  background:linear-gradient(135deg, rgba(124,58,237,.8), rgba(217,70,239,.6));
+  box-shadow:0 6px 16px -8px rgba(168,85,247,1);
+}
 
-    .conversion-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-    }
+.arith-actions{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:16px;
+}
 
-    .base-field {
-      flex: 1;
-      min-width: 100px;
-    }
+/* ---------- sidebar / history ---------- */
+.sidebar{
+  border:1px solid var(--stroke);
+  border-radius:var(--r-lg);
+  background:linear-gradient(180deg, rgba(22,16,42,.6), rgba(8,6,18,.6));
+  box-shadow:0 26px 50px -32px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.03);
+  padding:16px;
+  position:sticky;top:calc(10px + 62px);
+  max-height:calc(100dvh - 100px);
+  display:flex;flex-direction:column;
+  min-height:0;
+}
+@media (max-width:900px){
+  .sidebar{position:static;max-height:none}
+}
+.sidebar-head{
+  display:flex;align-items:center;gap:9px;
+  padding-bottom:13px;
+  margin-bottom:11px;
+  border-bottom:1px solid rgba(148,108,255,.12);
+}
+.sidebar-head .ic{width:16px;height:16px;color:var(--purple)}
+.sidebar-head h3{
+  font-size:.76rem;font-weight:650;
+  letter-spacing:.07em;text-transform:uppercase;
+  color:#cfc7ea;
+}
+.sidebar-head .spacer{margin-left:auto}
 
-    .ieee-breakdown {
-      margin-top: 0.8rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-    }
+.h-list{
+  display:flex;flex-direction:column;gap:5px;
+  overflow-y:auto;
+  min-height:0;
+  flex:1;
+  padding-right:3px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(168,85,247,.5) transparent;
+}
+.h-list::-webkit-scrollbar{width:5px}
+.h-list::-webkit-scrollbar-track{background:transparent}
+.h-list::-webkit-scrollbar-thumb{background:rgba(168,85,247,.45);border-radius:99px}
+.h-list::-webkit-scrollbar-thumb:hover{background:rgba(168,85,247,.75)}
 
-    .ieee-part {
-      background: rgba(20, 10, 40, 0.5);
-      padding: 0.6rem 0.9rem;
-      border-radius: 1rem;
-      border: 1px dashed rgba(200, 140, 255, 0.45);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      backdrop-filter: blur(8px);
-    }
+.h-item{
+  display:flex;flex-direction:column;gap:4px;
+  padding:9px 11px;
+  border-radius:11px;
+  border:1px solid transparent;
+  background:rgba(5,3,12,.4);
+  cursor:pointer;
+  transition:background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease);
+  animation:itemIn .38s var(--ease) both;
+  -webkit-tap-highlight-color:transparent;
+}
+@keyframes itemIn{
+  from{opacity:0;transform:translateX(-8px)}
+  to{opacity:1;transform:none}
+}
+.h-item:hover{
+  background:rgba(168,85,247,.11);
+  border-color:rgba(168,85,247,.3);
+  transform:translateX(3px);
+}
+.h-type{
+  font-family:var(--mono);font-size:.55rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--magenta);opacity:.85;
+}
+.h-val{
+  font-family:var(--mono);font-size:.73rem;color:#c9c1e6;
+  word-break:break-all;line-height:1.45;
+}
 
-    .bit-field {
-      background: rgba(0,0,0,0.5);
-      padding: 0.15rem 0.4rem;
-      border-radius: 0.4rem;
-      letter-spacing: 0.6px;
-      color: #e1bee7;
-      font-size: 0.65rem;
-    }
+.empty{
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  padding:26px 10px;
+  color:var(--muted-2);
+  text-align:center;
+}
+.empty .ic{width:26px;height:26px;opacity:.5;animation:floatY 3.6s ease-in-out infinite}
+@keyframes floatY{
+  0%,100%{transform:translateY(0);opacity:.4}
+  50%{transform:translateY(-5px);opacity:.75}
+}
+.empty p{font-size:.72rem;letter-spacing:.04em}
 
-    .arithmetic-row {
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-      flex-wrap: wrap;
-      margin: 0.8rem 0 0.6rem;
-    }
-    .arithmetic-row .matrix-input {
-      min-width: 80px;
-      width: auto;
-      flex: 1;
-    }
-    .arithmetic-row select {
-      font-family: 'JetBrains Mono', monospace;
-      background: #241540;
-      color: #ede0ff;
-      border: 1px solid #b44dff;
-      border-radius: 2.5rem;
-      padding: 0.6rem 0.8rem;
-      font-weight: bold;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 10px rgba(180,77,255,0.2);
-      font-size: 1.1rem;
-      min-width: 50px;
-    }
+/* ---------- footer ---------- */
+.foot{
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;flex-wrap:wrap;
+  padding:14px 16px;
+  border:1px solid var(--stroke);
+  border-radius:var(--r-lg);
+  background:rgba(8,6,18,.55);
+  font-family:var(--mono);
+  font-size:.68rem;letter-spacing:.06em;
+  color:var(--muted);
+  text-align:center;
+}
+.foot a{
+  color:#c084fc;text-decoration:none;
+  border-bottom:1px solid transparent;
+  transition:color .25s var(--ease), border-color .25s var(--ease);
+}
+.foot a:hover{color:#e879f9;border-bottom-color:#e879f9}
+.foot .sep{
+  width:3px;height:3px;border-radius:50%;
+  background:rgba(148,108,255,.4);
+}
+.foot b{
+  background:linear-gradient(120deg,#c084fc,#e879f9);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-weight:700;
+}
 
-    .op-btn, .clear-btn {
-      background: rgba(35, 20, 60, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid #b44dff;
-      color: #ede0ff;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.95rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 3rem;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      box-shadow: 0 4px 15px rgba(180, 77, 255, 0.2);
-      white-space: nowrap;
-    }
+/* ---------- misc ---------- */
+.ic{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-    .op-btn:hover, .clear-btn:hover {
-      background: #5c2d91;
-      box-shadow: 0 0 30px #e040fb;
-      color: white;
-      transform: scale(1.03);
-      border-color: #e040fb;
-    }
+@media (max-width:760px){
+  .topbar{flex-wrap:wrap;border-radius:18px;padding:10px}
+  .brand-text em{display:none}
+  .tabs{order:3;width:100%;margin-left:0;justify-content:flex-start}
+  .status{display:none}
+  .panel-head .sub{display:none}
+}
 
-    .steps-area {
-      margin-top: 0.8rem;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 1rem;
-      padding: 0.8rem 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      color: #d1c4e9;
-      border-left: 4px solid #e040fb;
-      max-height: 150px;
-      overflow-y: auto;
-      backdrop-filter: blur(10px);
-      line-height: 1.5;
-    }
-
-    .sidebar {
-      flex: 0.9;
-      min-width: 200px;
-      background: rgba(14, 10, 28, 0.5);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 2rem;
-      padding: 1.2rem;
-      border: 1px solid rgba(200, 150, 255, 0.3);
-      height: fit-content;
-    }
-
-    .history-item {
-      font-family: 'JetBrains Mono', monospace;
-      border-bottom: 1px solid rgba(200, 140, 255, 0.25);
-      padding: 0.5rem 0.4rem;
-      font-size: 0.75rem;
-      color: #d1b3ff;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-radius: 0.5rem;
-      word-break: break-all;
-    }
-
-    .history-item:hover {
-      background: rgba(180, 77, 255, 0.25);
-      color: white;
-      text-shadow: 0 0 12px #e040fb;
-      padding-left: 0.8rem;
-    }
-
-    .result-highlight {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: #f5f0ff;
-      background: rgba(160, 80, 255, 0.3);
-      padding: 0.15rem 0.6rem;
-      border-radius: 0.8rem;
-      word-break: break-all;
-    }
-
-    .copyright-footer {
-      width: 100%;
-      text-align: center;
-      padding: 0.8rem 1.2rem;
-      background: rgba(8, 6, 18, 0.5);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-radius: 2.5rem;
-      border: 1px solid rgba(180, 130, 255, 0.25);
-      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8);
-    }
-
-    .copyright-text {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      color: #b39ddb;
-      letter-spacing: 0.4px;
-    }
-
-    .copyright-text a {
-      color: #ce93d8;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      border-bottom: 1px solid transparent;
-    }
-
-    .copyright-text a:hover {
-      color: #ea80fc;
-      border-bottom: 1px solid #ea80fc;
-      text-shadow: 0 0 12px #e040fb;
-    }
-
-    .copyright-divider {
-      display: inline-block;
-      margin: 0 0.4rem;
-      color: rgba(180, 130, 255, 0.4);
-    }
-
-    .copyright-year {
-      color: #9c7cf4;
-      font-weight: 600;
-    }
-
-    /* --- تحسينات الهواتف --- */
-    @media (max-width: 900px) {
-      .dashboard {
-        flex-direction: column;
-      }
-      .sidebar {
-        min-width: unset;
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 700px) {
-      body { padding: 0.4rem; }
-      #matrixCanvas { opacity: 0.25; }
-      .glass-header { 
-        flex-direction: column; 
-        align-items: stretch;
-        padding: 1rem;
-      }
-      .logo-area { justify-content: center; }
-      .logo-text { font-size: 1.1rem; }
-      .glow-symbol { font-size: 1.8rem; }
-      .nav-links { 
-        justify-content: center; 
-        gap: 0.3rem;
-        flex-wrap: wrap;
-      }
-      .nav-links span { 
-        font-size: 0.65rem; 
-        padding: 0.3rem 0.6rem;
-      }
-      .glass-card { 
-        padding: 1rem; 
-        border-radius: 1.5rem;
-      }
-      .conversion-row { 
-        flex-direction: column; 
-        gap: 0.6rem;
-      }
-      .base-field { 
-        min-width: unset;
-        width: 100%;
-      }
-      .matrix-input {
-        font-size: 0.85rem;
-        padding: 0.6rem 0.8rem;
-      }
-      .arithmetic-row {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-      }
-      .arithmetic-row .matrix-input {
-        min-width: 60px;
-        font-size: 0.8rem;
-        padding: 0.5rem 0.7rem;
-      }
-      .arithmetic-row select {
-        padding: 0.5rem 0.6rem;
-        font-size: 0.9rem;
-        min-width: 40px;
-      }
-      .op-btn, .clear-btn { 
-        font-size: 0.8rem; 
-        padding: 0.5rem 1rem;
-      }
-      .copyright-footer { 
-        padding: 0.6rem 0.8rem;
-        border-radius: 2rem;
-      }
-      .copyright-text { 
-        font-size: 0.6rem;
-      }
-      .steps-area {
-        font-size: 0.7rem;
-        padding: 0.6rem 0.8rem;
-        max-height: 120px;
-      }
-      .ieee-part {
-        font-size: 0.7rem;
-        padding: 0.5rem 0.7rem;
-      }
-      .result-highlight {
-        font-size: 0.8rem;
-        padding: 0.1rem 0.5rem;
-      }
-    }
-
-    @media (max-width: 450px) {
-      .arithmetic-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .arithmetic-row select {
-        align-self: center;
-        width: 70px;
-      }
-      .ieee-part {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .ieee-part strong {
-        align-self: flex-start;
-      }
-    }
-  </style>
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+  #bg{display:none}
+}
+</style>
 </head>
 <body>
-  <!-- Matrix Rain Background -->
-  <canvas id="matrixCanvas"></canvas>
 
-  <div class="main-wrapper">
-    <div class="glass-app">
-      <header class="glass-header">
-        <div class="logo-area">
-          <span class="glow-symbol">𝕸</span>
-          <span class="logo-text">BitMatrix <span>MC88</span></span>
+<!-- ===================== SVG SPRITE ===================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="55%" stop-color="#e879f9"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+
+    <symbol id="i-bolt" viewBox="0 0 24 24">
+      <path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12l1-8.5Z"/>
+    </symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24">
+      <rect x="7" y="7" width="10" height="10" rx="2"/>
+      <rect x="10" y="10" width="4" height="4" rx="1"/>
+      <path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/>
+    </symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24">
+      <rect x="4" y="3" width="16" height="18" rx="2.5"/>
+      <path d="M8 7h8M8 12h2M12 12h2M16 12h.01M8 16h2M12 16h2M16 16h.01"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3.2 2"/>
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24">
+      <rect x="9" y="9" width="12" height="12" rx="2.5"/>
+      <path d="M5.5 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v.5"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M3.5 6h17M8.5 6V4.5A1.5 1.5 0 0 1 10 3h4a1.5 1.5 0 0 1 1.5 1.5V6"/>
+      <path d="M18.5 6 17.8 19a2 2 0 0 1-2 1.9h-7.6a2 2 0 0 1-2-1.9L5.5 6"/>
+      <path d="M10 11v6M14 11v6"/>
+    </symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24">
+      <path d="M4 12h15M13 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M20 6 9 17l-5-5"/>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24">
+      <path d="M12 3l1.9 5.4L19.5 10l-5.6 1.6L12 17l-1.9-5.4L4.5 10l5.6-1.6L12 3Z"/>
+      <path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/>
+    </symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24">
+      <path d="M12 3.5 2.5 20h19L12 3.5Z"/>
+      <path d="M12 10v4.2"/>
+      <circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/>
+      <path d="M20.5 4v5h-5"/>
+    </symbol>
+    <symbol id="i-hash" viewBox="0 0 24 24">
+      <path d="M5 9h14M5 15h14M10 3 8 21M16 3l-2 18"/>
+    </symbol>
+    <symbol id="i-binary" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="2"/>
+      <rect x="13.5" y="13.5" width="7" height="7" rx="2"/>
+      <path d="M17 3.5v6.5M7 14v6M14 17h6"/>
+    </symbol>
+    <symbol id="i-dec" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M8.5 9.5 12 7v10"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"/>
+    </symbol>
+    <symbol id="i-equals" viewBox="0 0 24 24">
+      <path d="M5 9h14M5 15h14"/>
+    </symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24">
+      <path d="M9 3h6M10 3v6.2L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.2V3"/>
+      <path d="M7.2 15h9.6"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ===================== BACKGROUND ===================== -->
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="glow a" aria-hidden="true"></div>
+<div class="glow b" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- ===================== SHELL ===================== -->
+<div class="shell">
+
+  <!-- ---------- TOPBAR ---------- -->
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="BitMatrix MC88">
+      <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="37" height="37" rx="11.5" fill="url(#lg)" opacity=".14"/>
+        <rect x="1.5" y="1.5" width="37" height="37" rx="11.5" fill="none" stroke="url(#lg)" stroke-width="1.4" opacity=".85"/>
+        <g fill="url(#lg)">
+          <rect x="10.5" y="10.5" width="6.6" height="6.6" rx="2"/>
+          <rect x="22.9" y="10.5" width="6.6" height="6.6" rx="2" opacity=".38"/>
+          <rect x="10.5" y="22.9" width="6.6" height="6.6" rx="2" opacity=".38"/>
+          <rect x="22.9" y="22.9" width="6.6" height="6.6" rx="2"/>
+        </g>
+      </svg>
+      <span class="brand-text">Bit<span class="grad">Matrix</span><em>MC88</em></span>
+    </a>
+
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <span class="tab-indicator" aria-hidden="true"></span>
+      <button class="tab active" data-tab="converter" role="tab" aria-selected="true">
+        <svg class="ic"><use href="#i-bolt"/></svg>Converter
+      </button>
+      <button class="tab" data-tab="ieee" role="tab" aria-selected="false">
+        <svg class="ic"><use href="#i-chip"/></svg>IEEE 754
+      </button>
+      <button class="tab" data-tab="arith" role="tab" aria-selected="false">
+        <svg class="ic"><use href="#i-calc"/></svg>Arithmetic
+      </button>
+    </nav>
+
+    <div class="status"><span class="pulse"></span>ready</div>
+  </header>
+
+  <!-- ---------- LAYOUT ---------- -->
+  <div class="layout">
+
+    <div class="stage">
+
+      <!-- ============ PANEL: CONVERTER ============ -->
+      <section class="panel active" id="panel-converter" role="tabpanel">
+        <div class="panel-head">
+          <svg class="ic"><use href="#i-bolt"/></svg>
+          <h2>Universal base converter</h2>
+          <span class="sub">dec / bin / hex</span>
         </div>
-        <div class="nav-links">
-          <span class="active-nav">⚡ Converter</span>
-          <span>🧮 IEEE754</span>
-          <span>➕ Operations</span>
-          <span>📋 History</span>
-        </div>
-      </header>
 
-      <div class="dashboard">
-        <div class="converter-panel">
-          <div class="glass-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:0.4rem;">
-              <h3 style="font-weight: 650; letter-spacing: 1.2px; color:#ede4ff; font-size:1rem;">🔷 UNIVERSAL CONVERTER</h3>
-              <span class="clear-btn" id="clearConverter">Clear</span>
-            </div>
-            <div class="conversion-row" style="margin-top:0.8rem;">
-              <div class="base-field">
-                <label>🔟 Decimal</label>
-                <input type="text" id="decInput" class="matrix-input" placeholder="10.625" value="10.625" autocomplete="off">
-              </div>
-              <div class="base-field">
-                <label>0️⃣ Binary</label>
-                <input type="text" id="binInput" class="matrix-input" placeholder="1010.101" autocomplete="off">
-              </div>
-              <div class="base-field">
-                <label>🔢 Hexadecimal</label>
-                <input type="text" id="hexInput" class="matrix-input" placeholder="A.A" autocomplete="off">
-              </div>
-            </div>
-            <div id="conversionSteps" class="steps-area">
-              💡 Enter a number to see conversion steps...
-            </div>
+        <div class="grid-3">
+          <div class="field">
+            <label class="label lbl-dec" for="decInput">
+              <svg class="ic"><use href="#i-dec"/></svg>Decimal
+            </label>
+            <input id="decInput" class="inp" type="text" inputmode="decimal"
+                   placeholder="10.625" value="10.625" autocomplete="off" spellcheck="false">
           </div>
-
-          <div class="glass-card">
-            <h3 style="font-weight: 650; color:#ede4ff; font-size:1rem;">🧮 IEEE 754 FLOATING-POINT</h3>
-            <div class="input-group" style="margin-top:0.6rem;">
-              <label>📥 Real Number Input</label>
-              <input type="text" id="ieeeInput" class="matrix-input" placeholder="e.g. 5.75 or -12.625" value="5.75" autocomplete="off">
-            </div>
-            <div class="ieee-breakdown">
-              <div class="ieee-part">
-                <span>🎯 Single (32-bit Hex)</span>
-                <strong id="ieee32Hex" class="result-highlight">—</strong>
-              </div>
-              <div class="ieee-part">
-                <span>🧬 Sign | Exponent | Mantissa</span>
-                <strong id="ieee32Bits" style="color:#ede0ff; font-size:0.7rem; word-break:break-all; display:flex; gap:0.2rem; flex-wrap:wrap;">
-                  <span class="bit-field">—</span>
-                </strong>
-              </div>
-              <div class="ieee-part">
-                <span>🎯 Double (64-bit Hex)</span>
-                <strong id="ieee64Hex" class="result-highlight">—</strong>
-              </div>
-            </div>
+          <div class="field">
+            <label class="label lbl-bin" for="binInput">
+              <svg class="ic"><use href="#i-binary"/></svg>Binary
+            </label>
+            <input id="binInput" class="inp" type="text" inputmode="text"
+                   placeholder="1010.101" autocomplete="off" spellcheck="false">
           </div>
-
-          <div class="glass-card">
-            <h3 style="font-weight: 650; color:#ede4ff; font-size:1rem;">⚙️ ARITHMETIC (Bin / Hex)</h3>
-            <div class="arithmetic-row">
-              <input type="text" id="operandA" class="matrix-input" placeholder="1010.1" value="1010.1" autocomplete="off">
-              <select id="arithmeticOp">
-                <option value="+">+</option>
-                <option value="-">−</option>
-                <option value="*">×</option>
-                <option value="/">÷</option>
-              </select>
-              <input type="text" id="operandB" class="matrix-input" placeholder="10.1" value="10.1" autocomplete="off">
-              <button id="computeArithBtn" class="op-btn">=</button>
-            </div>
-            <div style="margin-top:0.6rem; display:flex; gap:0.8rem; flex-wrap:wrap; align-items: baseline;">
-              <span>📌 Result:</span>
-              <strong id="arithResult" class="result-highlight" style="font-family: monospace;">—</strong>
-            </div>
-            <div id="arithSteps" class="steps-area" style="margin-top:0.6rem;">⚡ Arithmetic breakdown appears here</div>
+          <div class="field">
+            <label class="label lbl-hex" for="hexInput">
+              <svg class="ic"><use href="#i-hash"/></svg>Hexadecimal
+            </label>
+            <input id="hexInput" class="inp" type="text" inputmode="text"
+                   placeholder="A.A" autocomplete="off" spellcheck="false">
           </div>
         </div>
 
-        <div class="sidebar">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap:wrap; gap:0.4rem;">
-            <h3 style="font-weight: 650; color:#ede4ff; font-size:1rem;">🕒 Recent</h3>
-            <span class="clear-btn" id="clearHistory" style="font-size:0.6rem; padding:0.25rem 0.8rem;">Clear</span>
-          </div>
-          <div id="historyList" style="max-height: 300px; overflow-y: auto;">
-            <div class="history-item">✨ No history yet</div>
+        <div class="console" id="convConsole">
+          <div class="hint">
+            <svg class="ic"><use href="#i-spark"/></svg>
+            <span>Type in any field — the others follow instantly.</span>
           </div>
         </div>
-      </div>
+
+        <div class="arith-actions">
+          <button class="btn ghost" id="clearConverter">
+            <svg class="ic"><use href="#i-refresh"/></svg>Reset
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ PANEL: IEEE 754 ============ -->
+      <section class="panel" id="panel-ieee" role="tabpanel">
+        <div class="panel-head">
+          <svg class="ic"><use href="#i-chip"/></svg>
+          <h2>IEEE 754 floating point</h2>
+          <span class="sub">32 / 64 bit</span>
+        </div>
+
+        <div class="field" style="max-width:420px">
+          <label class="label lbl-ieee" for="ieeeInput">
+            <svg class="ic"><use href="#i-flask"/></svg>Real number
+          </label>
+          <input id="ieeeInput" class="inp" type="text" inputmode="decimal"
+                 placeholder="e.g. 5.75 or -12.625" value="5.75" autocomplete="off" spellcheck="false">
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="card-head">
+            <svg class="ic"><use href="#i-chip"/></svg>
+            <h3>Single precision · 32-bit</h3>
+            <span class="spacer"></span>
+            <span class="chip cyan" id="ieee32Hex">—</span>
+            <button class="iconbtn" data-copy="ieee32Hex" title="Copy hex" aria-label="Copy hex">
+              <svg class="ic"><use href="#i-copy"/></svg>
+            </button>
+          </div>
+
+          <div class="bitviz">
+            <div class="bitviz-row">
+              <span class="bit s" id="b32s">0</span>
+              <span class="bit e" id="b32e">00000000</span>
+              <span class="bit m" id="b32m">00000000000000000000000</span>
+            </div>
+            <div class="bitviz-legend">
+              <span><i class="sw s"></i>Sign · 1</span>
+              <span><i class="sw e"></i>Exponent · 8</span>
+              <span><i class="sw m"></i>Mantissa · 23</span>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric"><span>Sign</span><b id="mSign">—</b></div>
+            <div class="metric"><span>Biased exp</span><b id="mExpBias">—</b></div>
+            <div class="metric"><span>Unbiased</span><b id="mExpRaw">—</b></div>
+            <div class="metric"><span>Fraction</span><b id="mFrac">—</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <svg class="ic"><use href="#i-chip"/></svg>
+            <h3>Double precision · 64-bit</h3>
+            <span class="spacer"></span>
+            <span class="chip" id="ieee64Hex">—</span>
+            <button class="iconbtn" data-copy="ieee64Hex" title="Copy hex" aria-label="Copy hex">
+              <svg class="ic"><use href="#i-copy"/></svg>
+            </button>
+          </div>
+          <div class="metrics">
+            <div class="metric"><span>Sign</span><b id="dSign">—</b></div>
+            <div class="metric"><span>Biased exp</span><b id="dExpBias">—</b></div>
+            <div class="metric"><span>Unbiased</span><b id="dExpRaw">—</b></div>
+            <div class="metric"><span>Fraction</span><b id="dFrac">—</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PANEL: ARITHMETIC ============ -->
+      <section class="panel" id="panel-arith" role="tabpanel">
+        <div class="panel-head">
+          <svg class="ic"><use href="#i-calc"/></svg>
+          <h2>Arithmetic</h2>
+          <span class="sub">bin / hex</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div class="seg" id="baseSeg" role="group" aria-label="Base">
+            <button class="active" data-base="2">BIN</button>
+            <button data-base="16">HEX</button>
+          </div>
+          <span class="card-head" style="margin:0">
+            <span class="tag">fractional supported</span>
+          </span>
+        </div>
+
+        <div class="arith-grid">
+          <div class="field">
+            <label class="label lbl-op" for="opA">
+              <svg class="ic"><use href="#i-arrow-right"/></svg>Operand A
+            </label>
+            <input id="opA" class="inp" type="text" value="1010.1" autocomplete="off" spellcheck="false">
+          </div>
+
+          <div class="field ops-field">
+            <label class="label lbl-op">
+              <svg class="ic"><use href="#i-plus"/></svg>Operation
+            </label>
+            <div class="op-btns" id="opBtns" role="group" aria-label="Operator">
+              <button class="active" data-op="+">+</button>
+              <button data-op="-">−</button>
+              <button data-op="*">×</button>
+              <button data-op="/">÷</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label lbl-op" for="opB">
+              <svg class="ic"><use href="#i-arrow-right"/></svg>Operand B
+            </label>
+            <input id="opB" class="inp" type="text" value="10.1" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="arith-actions">
+          <button class="btn primary" id="computeBtn">
+            <svg class="ic"><use href="#i-equals"/></svg>Compute
+          </button>
+          <div class="result-line" style="margin-left:auto">
+            <span class="k">Result</span>
+            <span class="chip mint" id="arithResult">—</span>
+            <button class="iconbtn" data-copy="arithResult" title="Copy result" aria-label="Copy result">
+              <svg class="ic"><use href="#i-copy"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="console" id="arithConsole">
+          <div class="hint">
+            <svg class="ic"><use href="#i-spark"/></svg>
+            <span>Enter both operands and hit compute.</span>
+          </div>
+        </div>
+      </section>
+
     </div>
 
-    <footer class="copyright-footer">
-      <p class="copyright-text">
-        <span class="copyright-year">© 2026</span>
-        <span class="copyright-divider">|</span>
-        <a href="mailto:mohamed005cheikh@gmail.com">mohamed005cheikh@gmail.com</a>
-        <span class="copyright-divider">|</span>
-        <span>by <strong style="color:#ea80fc; text-shadow: 0 0 8px #b44dff;">MC</strong></span>
-      </p>
-    </footer>
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <svg class="ic"><use href="#i-clock"/></svg>
+        <h3>Recent</h3>
+        <span class="spacer"></span>
+        <button class="iconbtn" id="clearHistory" title="Clear history" aria-label="Clear history">
+          <svg class="ic"><use href="#i-trash"/></svg>
+        </button>
+      </div>
+      <div class="h-list" id="historyList"></div>
+    </aside>
+
   </div>
 
-  <script>
-    (function() {
-      // --- Matrix Rain Effect (محسّن للهواتف) ---
-      const canvas = document.getElementById('matrixCanvas');
-      const ctx = canvas.getContext('2d');
+  <!-- ---------- FOOTER ---------- -->
+  <footer class="foot">
+    <span>© 2026</span>
+    <span class="sep"></span>
+    <a href="mailto:mohamed005cheikh@gmail.com">mohamed005cheikh@gmail.com</a>
+    <span class="sep"></span>
+    <span>built by <b>MC</b></span>
+  </footer>
 
-      let width, height, columns, drops, fontSize, matrixChars;
+</div>
 
-      function initMatrix() {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+<script>
+(function(){
+'use strict';
 
-        fontSize = Math.max(10, Math.min(18, width / 40));
-        columns = Math.floor(width / fontSize);
-        drops = [];
-        matrixChars = '01';
+/* ============================================================
+   0 · helpers
+   ============================================================ */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        for (let i = 0; i < columns; i++) {
-          drops[i] = Math.floor(Math.random() * -height / fontSize);
-        }
+function flash(el, text){
+  if (!el) return;
+  if (el.textContent === text) return;
+  el.textContent = text;
+  el.classList.remove('flash');
+  void el.offsetWidth;           /* force reflow so the anim replays */
+  el.classList.add('flash');
+}
+
+/* ============================================================
+   1 · Matrix rain — throttled, gradient-free, DPR-capped
+   ============================================================ */
+(function matrixRain(){
+  const canvas = $('#bg');
+  if (!canvas || reduceMotion) return;
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  const FPS      = 26;
+  const INTERVAL = 1000 / FPS;
+  const GLYPHS   = '01';
+  const TRAIL    = 'rgba(5,4,10,0.085)';
+  const COL_A    = 'rgba(150,98,255,0.62)';
+  const COL_B    = 'rgba(34,211,238,0.55)';
+
+  let W = 0, H = 0, cols = 0, drops = [], fontSize = 15;
+  let rafId = null, lastT = 0;
+
+  function build(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width  = W;          /* DPR 1 on purpose — huge perf win */
+    canvas.height = H;
+
+    fontSize = W < 640 ? 13 : 15;
+    cols = Math.ceil(W / fontSize);
+    drops = new Array(cols);
+    for (let i = 0; i < cols; i++){
+      drops[i] = Math.floor(Math.random() * -(H / fontSize));
+    }
+
+    ctx.fillStyle = '#05040a';
+    ctx.fillRect(0, 0, W, H);
+    ctx.font = fontSize + 'px "JetBrains Mono", ui-monospace, monospace';
+    ctx.textBaseline = 'top';
+  }
+
+  function frame(t){
+    rafId = requestAnimationFrame(frame);
+    if (t - lastT < INTERVAL) return;
+    lastT = t;
+
+    ctx.fillStyle = TRAIL;
+    ctx.fillRect(0, 0, W, H);
+    ctx.font = fontSize + 'px "JetBrains Mono", ui-monospace, monospace';
+
+    for (let i = 0; i < cols; i++){
+      const y = drops[i] * fontSize;
+
+      if (y > -fontSize && y < H){
+        ctx.fillStyle = (drops[i] % 9 === 0) ? COL_B : COL_A;
+        ctx.fillText(GLYPHS[(Math.random() * 2) | 0], i * fontSize, y);
       }
 
-      function drawMatrix() {
-        ctx.fillStyle = 'rgba(3, 3, 5, 0.05)';
-        ctx.fillRect(0, 0, width, height);
+      if (y > H && Math.random() > 0.973) drops[i] = 0;
+      drops[i]++;
+    }
+  }
 
-        ctx.fillStyle = '#b44dff';
-        ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+  function start(){ if (rafId === null){ lastT = 0; rafId = requestAnimationFrame(frame); } }
+  function stop(){ if (rafId !== null){ cancelAnimationFrame(rafId); rafId = null; } }
 
-        for (let i = 0; i < drops.length; i++) {
-          const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-          const x = i * fontSize;
-          const y = drops[i] * fontSize;
+  build();
+  start();
 
-          // تدرج الألوان من الأرجواني إلى السماوي
-          const gradient = ctx.createLinearGradient(x, y - fontSize, x, y);
-          gradient.addColorStop(0, 'rgba(180, 77, 255, 0.1)');
-          gradient.addColorStop(0.5, 'rgba(224, 64, 251, 0.7)');
-          gradient.addColorStop(1, 'rgba(77, 208, 225, 0.9)');
-          ctx.fillStyle = gradient;
-          ctx.fillText(char, x, y);
+  let rTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(rTimer);
+    rTimer = setTimeout(build, 220);
+  }, { passive: true });
 
-          // تحديث الموقع
-          if (y > height && Math.random() > 0.975) {
-            drops[i] = 0;
-          }
-          drops[i]++;
-        }
-        requestAnimationFrame(drawMatrix);
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) stop(); else start();
+  });
+})();
+
+/* ============================================================
+   2 · Number helpers
+   ============================================================ */
+const HEXD = '0123456789ABCDEF';
+
+function isValidDec(s){
+  s = String(s).trim();
+  if (!s) return false;
+  return Number.isFinite(parseFloat(s)) && /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(s);
+}
+function isValidBin(s){
+  s = String(s).trim();
+  if (s.charAt(0) === '-') s = s.slice(1);
+  return /^[01]*(\.[01]+)?$/.test(s) && /[01]/.test(s);
+}
+function isValidHex(s){
+  s = String(s).trim();
+  if (s.charAt(0) === '-') s = s.slice(1);
+  return /^[0-9a-fA-F]*(\.[0-9a-fA-F]+)?$/.test(s) && /[0-9a-fA-F]/.test(s);
+}
+
+function decToBin(num){
+  if (!Number.isFinite(num)) return '';
+  const neg = num < 0;
+  const n = Math.abs(num);
+  let ip = Math.floor(n);
+  let fp = n - ip;
+
+  let is = ip === 0 ? '0' : '';
+  while (ip > 0){ is = (ip % 2) + is; ip = Math.floor(ip / 2); }
+
+  let fs = '';
+  let guard = 0;
+  while (fp > 0 && guard < 24){
+    fp *= 2;
+    if (fp >= 1){ fs += '1'; fp -= 1; } else { fs += '0'; }
+    guard++;
+  }
+  fs = fs.replace(/0+$/, '');
+
+  return (neg ? '-' : '') + is + (fs ? '.' + fs : '');
+}
+
+function decToHex(num){
+  if (!Number.isFinite(num)) return '';
+  const neg = num < 0;
+  const n = Math.abs(num);
+  let ip = Math.floor(n);
+  let fp = n - ip;
+
+  let is = ip === 0 ? '0' : '';
+  while (ip > 0){ is = HEXD[ip % 16] + is; ip = Math.floor(ip / 16); }
+
+  let fs = '';
+  let guard = 0;
+  while (fp > 0 && guard < 14){
+    fp *= 16;
+    const d = Math.floor(fp);
+    fs += HEXD[d];
+    fp -= d;
+    guard++;
+  }
+  fs = fs.replace(/0+$/, '');
+
+  return (neg ? '-' : '') + is + (fs ? '.' + fs : '');
+}
+
+function binToDec(str){
+  let s = String(str).trim();
+  if (!s) return NaN;
+  let neg = false;
+  if (s.charAt(0) === '-'){ neg = true; s = s.slice(1); }
+  if (!/^[01]*(\.[01]+)?$/.test(s) || !/[01]/.test(s)) return NaN;
+
+  const parts = s.split('.');
+  const ip = parts[0] || '';
+  const fp = parts[1] || '';
+  let v = 0;
+
+  for (let i = 0; i < ip.length; i++){
+    if (ip.charAt(i) === '1') v += Math.pow(2, ip.length - 1 - i);
+  }
+  for (let i = 0; i < fp.length; i++){
+    if (fp.charAt(i) === '1') v += Math.pow(2, -(i + 1));
+  }
+  return neg ? -v : v;
+}
+
+function hexToDec(str){
+  let s = String(str).trim();
+  if (!s) return NaN;
+  let neg = false;
+  if (s.charAt(0) === '-'){ neg = true; s = s.slice(1); }
+  if (!/^[0-9a-fA-F]*(\.[0-9a-fA-F]+)?$/.test(s) || !/[0-9a-fA-F]/.test(s)) return NaN;
+
+  const parts = s.split('.');
+  const ip = parts[0] || '';
+  const fp = parts[1] || '';
+  let v = 0;
+
+  for (let i = 0; i < ip.length; i++){
+    v += parseInt(ip.charAt(i), 16) * Math.pow(16, ip.length - 1 - i);
+  }
+  for (let i = 0; i < fp.length; i++){
+    v += parseInt(fp.charAt(i), 16) * Math.pow(16, -(i + 1));
+  }
+  return neg ? -v : v;
+}
+
+function pretty(n){
+  if (!Number.isFinite(n)) return '—';
+  const r = Math.round(n * 1e10) / 1e10;
+  return String(r);
+}
+
+/* ============================================================
+   3 · Console renderer (safe DOM, no innerHTML with user data)
+   ============================================================ */
+function renderConsole(host, rows){
+  host.innerHTML = '';
+  rows.forEach(function(r){
+    const row = document.createElement('div');
+    row.className = 'step' + (r.cls ? ' ' + r.cls : '');
+
+    const k = document.createElement('span');
+    k.className = 'step-k';
+    k.textContent = r.k;
+
+    const v = document.createElement('span');
+    v.className = 'step-v';
+    v.textContent = r.v;
+
+    row.appendChild(k);
+    row.appendChild(v);
+    host.appendChild(row);
+  });
+}
+
+function renderHint(host, text){
+  host.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'hint';
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'ic');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', '#i-spark');
+  svg.appendChild(use);
+
+  const p = document.createElement('span');
+  p.textContent = text;
+
+  wrap.appendChild(svg);
+  wrap.appendChild(p);
+  host.appendChild(wrap);
+}
+
+/* ============================================================
+   4 · History
+   ============================================================ */
+const HISTORY_KEY = 'bitmatrix.history.v2';
+let historyCache = [];
+
+function loadHistory(){
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    historyCache = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(historyCache)) historyCache = [];
+  } catch(e){ historyCache = []; }
+}
+
+function saveHistory(){
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(historyCache)); } catch(e){}
+}
+
+function renderHistory(){
+  const list = $('#historyList');
+  list.innerHTML = '';
+
+  if (!historyCache.length){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML =
+      '<svg class="ic"><use href="#i-spark"/></svg>' +
+      '<p>Nothing here yet.<br>Your conversions will appear.</p>';
+    list.appendChild(empty);
+    return;
+  }
+
+  historyCache.forEach(function(item, idx){
+    const el = document.createElement('div');
+    el.className = 'h-item';
+    el.style.animationDelay = Math.min(idx * 26, 300) + 'ms';
+    el.dataset.index = idx;
+
+    const t = document.createElement('div');
+    t.className = 'h-type';
+    t.textContent = item.type;
+
+    const v = document.createElement('div');
+    v.className = 'h-val';
+    v.textContent = item.text;
+
+    el.appendChild(t);
+    el.appendChild(v);
+    list.appendChild(el);
+  });
+}
+
+function pushHistory(type, text, restore){
+  if (!text) return;
+  const last = historyCache[0];
+  if (last && last.text === text && last.type === type) return;
+
+  historyCache.unshift({ type: type, text: text, restore: restore || '' });
+  if (historyCache.length > 30) historyCache.length = 30;
+  saveHistory();
+  renderHistory();
+}
+
+$('#historyList').addEventListener('click', function(e){
+  const item = e.target.closest('.h-item');
+  if (!item) return;
+  const entry = historyCache[+item.dataset.index];
+  if (!entry || !entry.restore) return;
+
+  decInput.value = entry.restore;
+  syncFromDec(true);
+  setTab('converter');
+});
+
+$('#clearHistory').addEventListener('click', function(){
+  historyCache = [];
+  saveHistory();
+  renderHistory();
+});
+
+/* ============================================================
+   5 · Converter panel
+   ============================================================ */
+const decInput = $('#decInput');
+const binInput = $('#binInput');
+const hexInput = $('#hexInput');
+const convConsole = $('#convConsole');
+
+let historyTimer = null;
+function scheduleHistory(type, text, restore){
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(function(){
+    pushHistory(type, text, restore);
+  }, 1100);
+}
+
+function markInvalid(input, bad){
+  input.classList.toggle('bad', !!bad);
+}
+
+function syncFromDec(record){
+  const raw = decInput.value.trim();
+
+  if (!raw){
+    binInput.value = '';
+    hexInput.value = '';
+    markInvalid(decInput, false);
+    renderHint(convConsole, 'Type in any field — the others follow instantly.');
+    return;
+  }
+
+  if (!isValidDec(raw)){
+    binInput.value = '';
+    hexInput.value = '';
+    markInvalid(decInput, true);
+    renderConsole(convConsole, [
+      { k: 'DEC', v: 'Not a valid decimal number', cls: 'err' }
+    ]);
+    return;
+  }
+
+  markInvalid(decInput, false);
+  const v = parseFloat(raw);
+  const b = decToBin(v);
+  const h = decToHex(v);
+
+  binInput.value = b;
+  hexInput.value = h;
+
+  renderConsole(convConsole, [
+    { k: 'DEC', v: pretty(v) },
+    { k: 'BIN', v: b },
+    { k: 'HEX', v: h }
+  ]);
+
+  if (record) scheduleHistory('DEC → BIN / HEX', pretty(v) + '  →  ' + b, String(v));
+}
+
+function syncFromBin(record){
+  const raw = binInput.value.trim();
+
+  if (!raw){
+    decInput.value = '';
+    hexInput.value = '';
+    markInvalid(binInput, false);
+    renderHint(convConsole, 'Type in any field — the others follow instantly.');
+    return;
+  }
+
+  if (!isValidBin(raw)){
+    markInvalid(binInput, true);
+    renderConsole(convConsole, [
+      { k: 'BIN', v: 'Only 0, 1 and a single dot are allowed', cls: 'err' }
+    ]);
+    return;
+  }
+
+  markInvalid(binInput, false);
+  const v = binToDec(raw);
+  const h = decToHex(v);
+  const d = pretty(v);
+
+  decInput.value = d;
+  hexInput.value = h;
+
+  renderConsole(convConsole, [
+    { k: 'BIN', v: raw },
+    { k: 'DEC', v: d },
+    { k: 'HEX', v: h }
+  ]);
+
+  if (record) scheduleHistory('BIN → DEC / HEX', raw + '  →  ' + d, d);
+}
+
+function syncFromHex(record){
+  const raw = hexInput.value.trim();
+
+  if (!raw){
+    decInput.value = '';
+    binInput.value = '';
+    markInvalid(hexInput, false);
+    renderHint(convConsole, 'Type in any field — the others follow instantly.');
+    return;
+  }
+
+  if (!isValidHex(raw)){
+    markInvalid(hexInput, true);
+    renderConsole(convConsole, [
+      { k: 'HEX', v: 'Only 0-9, A-F and a single dot are allowed', cls: 'err' }
+    ]);
+    return;
+  }
+
+  markInvalid(hexInput, false);
+  const v = hexToDec(raw);
+  const b = decToBin(v);
+  const d = pretty(v);
+
+  decInput.value = d;
+  binInput.value = b;
+
+  renderConsole(convConsole, [
+    { k: 'HEX', v: raw.toUpperCase() },
+    { k: 'DEC', v: d },
+    { k: 'BIN', v: b }
+  ]);
+
+  if (record) scheduleHistory('HEX → DEC / BIN', raw.toUpperCase() + '  →  ' + d, d);
+}
+
+decInput.addEventListener('input', function(){ syncFromDec(true); });
+binInput.addEventListener('input', function(){ syncFromBin(true); });
+hexInput.addEventListener('input', function(){ syncFromHex(true); });
+
+/* keep focus stable: clicking a field selects nothing weird */
+[decInput, binInput, hexInput].forEach(function(el){
+  el.addEventListener('focus', function(){ markInvalid(el, false); });
+});
+
+$('#clearConverter').addEventListener('click', function(){
+  decInput.value = '';
+  binInput.value = '';
+  hexInput.value = '';
+  markInvalid(decInput, false);
+  markInvalid(binInput, false);
+  markInvalid(hexInput, false);
+  renderHint(convConsole, 'Cleared. Type a number to start again.');
+  decInput.focus();
+});
+
+/* ============================================================
+   6 · IEEE 754 panel
+   ============================================================ */
+const ieeeInput = $('#ieeeInput');
+
+function updateIEEE(){
+  const raw = ieeeInput.value.trim();
+
+  if (!raw || !isValidDec(raw)){
+    markInvalid(ieeeInput, !!raw);
+    ['ieee32Hex', 'ieee64Hex'].forEach(function(id){ $(('#' + id)).textContent = '—'; });
+    $('#b32s').textContent = '—';
+    $('#b32e').textContent = '—';
+    $('#b32m').textContent = '—';
+    ['#mSign', '#mExpBias', '#mExpRaw', '#mFrac',
+     '#dSign', '#dExpBias', '#dExpRaw', '#dFrac'].forEach(function(sel){
+      $(sel).textContent = '—';
+    });
+    return;
+  }
+
+  markInvalid(ieeeInput, false);
+  const v = parseFloat(raw);
+
+  /* ---- 32-bit ---- */
+  const buf32 = new ArrayBuffer(4);
+  const dv32 = new DataView(buf32);
+  dv32.setFloat32(0, v, false);
+  const u32 = dv32.getUint32(0, false);
+  const bits = u32.toString(2).padStart(32, '0');
+
+  const s32 = bits.slice(0, 1);
+  const e32 = bits.slice(1, 9);
+  const m32 = bits.slice(9);
+
+  flash($('#ieee32Hex'), '0x' + u32.toString(16).toUpperCase().padStart(8, '0'));
+  $('#b32s').textContent = s32;
+  $('#b32e').textContent = e32;
+  $('#b32m').textContent = m32;
+
+  const bias32 = parseInt(e32, 2);
+  $('#mSign').textContent = s32 === '1' ? '1 (negative)' : '0 (positive)';
+  $('#mExpBias').textContent = bias32;
+  $('#mExpRaw').textContent = bias32 === 0 ? 'denormal' : (bias32 - 127);
+  $('#mFrac').textContent = m32.replace(/0+$/, '') || '0';
+
+  /* ---- 64-bit ---- */
+  const buf64 = new ArrayBuffer(8);
+  const dv64 = new DataView(buf64);
+  dv64.setFloat64(0, v, false);
+  const hi = dv64.getUint32(0, false);
+  const lo = dv64.getUint32(4, false);
+
+  const hex64 = '0x' +
+    hi.toString(16).toUpperCase().padStart(8, '0') +
+    lo.toString(16).toUpperCase().padStart(8, '0');
+  flash($('#ieee64Hex'), hex64);
+
+  const bits64 = hi.toString(2).padStart(32, '0') + lo.toString(2).padStart(32, '0');
+  const s64 = bits64.slice(0, 1);
+  const e64 = bits64.slice(1, 12);
+  const m64 = bits64.slice(12);
+  const bias64 = parseInt(e64, 2);
+
+  $('#dSign').textContent = s64 === '1' ? '1 (negative)' : '0 (positive)';
+  $('#dExpBias').textContent = bias64;
+  $('#dExpRaw').textContent = bias64 === 0 ? 'denormal' : (bias64 - 1023);
+  $('#dFrac').textContent = m64.replace(/0+$/, '').slice(0, 16) + (m64.replace(/0+$/, '').length > 16 ? '…' : '') || '0';
+}
+
+ieeeInput.addEventListener('input', updateIEEE);
+
+/* ============================================================
+   7 · Arithmetic panel
+   ============================================================ */
+const opA = $('#opA');
+const opB = $('#opB');
+const arithResult = $('#arithResult');
+const arithConsole = $('#arithConsole');
+
+let currentBase = 2;
+let currentOp = '+';
+
+const OP_SYMBOL = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+$('#opBtns').addEventListener('click', function(e){
+  const btn = e.target.closest('button[data-op]');
+  if (!btn) return;
+  $$('#opBtns button').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  currentOp = btn.dataset.op;
+});
+
+$('#baseSeg').addEventListener('click', function(e){
+  const btn = e.target.closest('button[data-base]');
+  if (!btn) return;
+  $$('#baseSeg button').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  currentBase = parseInt(btn.dataset.base, 10);
+
+  if (currentBase === 2){
+    opA.value = '1010.1';
+    opB.value = '10.1';
+    opA.placeholder = '1010.1';
+    opB.placeholder = '10.1';
+  } else {
+    opA.value = 'A.A';
+    opB.value = '2.8';
+    opA.placeholder = 'A.A';
+    opB.placeholder = '2.8';
+  }
+  arithResult.textContent = '—';
+  renderHint(arithConsole, 'Enter both operands and hit compute.');
+});
+
+function computeArithmetic(){
+  const aRaw = opA.value.trim();
+  const bRaw = opB.value.trim();
+
+  const validator = currentBase === 2 ? isValidBin : isValidHex;
+  const parser    = currentBase === 2 ? binToDec : hexToDec;
+  const printer   = currentBase === 2 ? decToBin : decToHex;
+  const baseName  = currentBase === 2 ? 'BIN' : 'HEX';
+
+  markInvalid(opA, false);
+  markInvalid(opB, false);
+
+  if (!aRaw || !bRaw){
+    renderConsole(arithConsole, [
+      { k: 'ERR', v: 'Both operands are required', cls: 'err' }
+    ]);
+    return;
+  }
+
+  if (!validator(aRaw)){
+    markInvalid(opA, true);
+    renderConsole(arithConsole, [
+      { k: baseName, v: 'Operand A is not valid for base ' + currentBase, cls: 'err' }
+    ]);
+    return;
+  }
+  if (!validator(bRaw)){
+    markInvalid(opB, true);
+    renderConsole(arithConsole, [
+      { k: baseName, v: 'Operand B is not valid for base ' + currentBase, cls: 'err' }
+    ]);
+    return;
+  }
+
+  const a = parser(aRaw);
+  const b = parser(bRaw);
+  let r;
+
+  switch (currentOp){
+    case '+': r = a + b; break;
+    case '-': r = a - b; break;
+    case '*': r = a * b; break;
+    case '/':
+      if (b === 0){
+        arithResult.textContent = '÷0';
+        renderConsole(arithConsole, [
+          { k: 'ERR', v: 'Division by zero', cls: 'err' }
+        ]);
+        return;
       }
+      r = a / b;
+      break;
+    default: return;
+  }
 
-      // تهيئة وتشغيل Matrix Rain
-      initMatrix();
-      drawMatrix();
+  if (!Number.isFinite(r)){
+    renderConsole(arithConsole, [{ k: 'ERR', v: 'Result is not finite', cls: 'err' }]);
+    return;
+  }
 
-      // إعادة التهيئة عند تغيير حجم النافذة
-      let resizeTimeout;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          initMatrix();
-        }, 200);
-      });
+  const out = printer(r);
+  flash(arithResult, out);
 
-      // --- باقي الكود (المحول، IEEE754، العمليات الحسابية، التاريخ) ---
-      const decInp = document.getElementById('decInput');
-      const binInp = document.getElementById('binInput');
-      const hexInp = document.getElementById('hexInput');
-      const stepsDiv = document.getElementById('conversionSteps');
-      const historyDiv = document.getElementById('historyList');
+  renderConsole(arithConsole, [
+    { k: 'A', v: aRaw + '  (' + baseName + ')  =  ' + pretty(a) + '  (DEC)' },
+    { k: 'B', v: bRaw + '  (' + baseName + ')  =  ' + pretty(b) + '  (DEC)' },
+    { k: 'OP', v: OP_SYMBOL[currentOp] },
+    { k: baseName, v: out, cls: 'ok' },
+    { k: 'DEC', v: pretty(r) }
+  ]);
 
-      const ieeeInput = document.getElementById('ieeeInput');
-      const ieee32Hex = document.getElementById('ieee32Hex');
-      const ieee32Bits = document.getElementById('ieee32Bits');
-      const ieee64Hex = document.getElementById('ieee64Hex');
+  pushHistory(
+    baseName + ' ' + OP_SYMBOL[currentOp],
+    aRaw + ' ' + OP_SYMBOL[currentOp] + ' ' + bRaw + '  =  ' + out,
+    ''
+  );
+}
 
-      const opA = document.getElementById('operandA');
-      const opB = document.getElementById('operandB');
-      const opSelect = document.getElementById('arithmeticOp');
-      const arithResultSpan = document.getElementById('arithResult');
-      const arithStepsDiv = document.getElementById('arithSteps');
+$('#computeBtn').addEventListener('click', computeArithmetic);
 
-      const parseDecimal = (str) => {
-        if (!str || str.trim() === '') return NaN;
-        return parseFloat(str.trim());
-      };
+[opA, opB].forEach(function(el){
+  el.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') computeArithmetic();
+  });
+});
 
-      const decToBin = (decNum) => {
-        if (isNaN(decNum)) return { bin: 'Invalid', steps: '' };
-        const sign = decNum < 0 ? '-' : '';
-        let num = Math.abs(decNum);
-        let intPart = Math.floor(num);
-        let fracPart = num - intPart;
-        let binInt = intPart === 0 ? '0' : '';
-        let tempInt = intPart;
-        while (tempInt > 0) {
-          binInt = (tempInt % 2) + binInt;
-          tempInt = Math.floor(tempInt / 2);
-        }
-        let binFrac = '';
-        let tempFrac = fracPart;
-        let maxIter = 20;
-        while (tempFrac > 0 && binFrac.length < maxIter) {
-          tempFrac *= 2;
-          let bit = Math.floor(tempFrac);
-          binFrac += bit;
-          tempFrac -= bit;
-        }
-        let result = sign + binInt;
-        if (fracPart > 0 || binFrac.length > 0) result += '.' + (binFrac || '0');
-        const steps = `Integer ${intPart} → ${binInt} | Fraction 0.${fracPart.toString().substring(2,6)} → 0.${binFrac}`;
-        return { bin: result, steps };
-      };
+/* ============================================================
+   8 · Tabs
+   ============================================================ */
+const tabs = $$('.tab');
+const indicator = $('.tab-indicator');
+const panels = $$('.panel');
 
-      const binToDec = (binStr) => {
-        if (!/^[01]+(\.[01]+)?$/.test(binStr.trim())) return NaN;
-        let parts = binStr.split('.');
-        let intPart = parts[0];
-        let fracPart = parts[1] || '';
-        let dec = 0;
-        for (let i = 0; i < intPart.length; i++) {
-          if (intPart[i] === '1') dec += Math.pow(2, intPart.length - 1 - i);
-        }
-        for (let i = 0; i < fracPart.length; i++) {
-          if (fracPart[i] === '1') dec += Math.pow(2, -(i+1));
-        }
-        return dec;
-      };
+function moveIndicator(btn){
+  if (!btn || !indicator) return;
+  indicator.style.width  = btn.offsetWidth + 'px';
+  indicator.style.height = btn.offsetHeight + 'px';
+  indicator.style.transform =
+    'translate(' + btn.offsetLeft + 'px,' + btn.offsetTop + 'px)';
+}
 
-      const decToHex = (decNum) => {
-        if (isNaN(decNum)) return 'Invalid';
-        let sign = decNum < 0 ? '-' : '';
-        let num = Math.abs(decNum);
-        let intPart = Math.floor(num);
-        let fracPart = num - intPart;
-        let hexInt = intPart === 0 ? '0' : '';
-        let tempInt = intPart;
-        while (tempInt > 0) {
-          let rem = tempInt % 16;
-          hexInt = (rem < 10 ? rem : String.fromCharCode(87 + rem)) + hexInt;
-          tempInt = Math.floor(tempInt / 16);
-        }
-        let hexFrac = '';
-        let temp = fracPart;
-        let maxIter = 12;
-        while (temp > 0 && hexFrac.length < maxIter) {
-          temp *= 16;
-          let digit = Math.floor(temp);
-          hexFrac += (digit < 10 ? digit : String.fromCharCode(87 + digit));
-          temp -= digit;
-        }
-        let result = sign + hexInt;
-        if (fracPart > 0 || hexFrac.length > 0) result += '.' + (hexFrac || '0');
-        return result;
-      };
+function setTab(name){
+  let activeBtn = null;
 
-      const hexToDec = (hexStr) => {
-        if (!/^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(hexStr.trim())) return NaN;
-        let parts = hexStr.split('.');
-        let intPart = parts[0].toLowerCase();
-        let fracPart = parts[1] || '';
-        let dec = 0;
-        for (let i = 0; i < intPart.length; i++) {
-          let val = parseInt(intPart[i], 16);
-          dec += val * Math.pow(16, intPart.length - 1 - i);
-        }
-        for (let i = 0; i < fracPart.length; i++) {
-          let val = parseInt(fracPart[i], 16);
-          dec += val * Math.pow(16, -(i+1));
-        }
-        return dec;
-      };
+  tabs.forEach(function(t){
+    const on = t.dataset.tab === name;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on ? 'true' : 'false');
+    if (on) activeBtn = t;
+  });
 
-      const updateIEEE754 = () => {
-        let val = parseDecimal(ieeeInput.value);
-        if (isNaN(val)) {
-          ieee32Hex.textContent = 'Invalid';
-          ieee32Bits.innerHTML = '<span class="bit-field">—</span>';
-          ieee64Hex.textContent = 'Invalid';
-          return;
-        }
-        const buffer32 = new ArrayBuffer(4);
-        const view32 = new DataView(buffer32);
-        view32.setFloat32(0, val, false);
-        let int32 = view32.getUint32(0, false);
-        let hex32 = '0x' + int32.toString(16).toUpperCase().padStart(8, '0');
-        let bin32 = int32.toString(2).padStart(32, '0');
-        ieee32Hex.textContent = hex32;
-        ieee32Bits.innerHTML = `<span style="color:#f8bbd0;">S:${bin32[0]}</span> <span style="color:#81d4fa;">E:${bin32.slice(1,9)}</span> <span style="color:#ce93d8;">M:${bin32.slice(9)}</span>`;
-        const buffer64 = new ArrayBuffer(8);
-        const view64 = new DataView(buffer64);
-        view64.setFloat64(0, val, false);
-        let high32 = view64.getUint32(0, false);
-        let low32 = view64.getUint32(4, false);
-        ieee64Hex.textContent = '0x' + high32.toString(16).toUpperCase().padStart(8, '0') + low32.toString(16).toUpperCase().padStart(8, '0');
-      };
+  panels.forEach(function(p){
+    p.classList.toggle('active', p.id === 'panel-' + name);
+  });
 
-      const addToHistory = (entry) => {
-        let stored = JSON.parse(localStorage.getItem('bitmatrixHistory') || '[]');
-        stored.unshift(entry);
-        if (stored.length > 12) stored.pop();
-        localStorage.setItem('bitmatrixHistory', JSON.stringify(stored));
-        renderHistory();
-      };
+  moveIndicator(activeBtn);
+}
 
-      const renderHistory = () => {
-        let stored = JSON.parse(localStorage.getItem('bitmatrixHistory') || '[]');
-        historyDiv.innerHTML = stored.length ? stored.map(e => `<div class="history-item">${e}</div>`).join('') : '<div class="history-item">✨ No history yet</div>';
-      };
+tabs.forEach(function(btn){
+  btn.addEventListener('click', function(){ setTab(btn.dataset.tab); });
+});
 
-      const updateAllFromDecimal = (source = 'dec') => {
-        let decVal = parseDecimal(decInp.value);
-        if (isNaN(decVal)) {
-          if (source !== 'dec') decInp.value = '';
-          binInp.value = ''; hexInp.value = '';
-          stepsDiv.innerHTML = '⛔ Invalid decimal number';
-          return;
-        }
-        let binObj = decToBin(decVal);
-        binInp.value = binObj.bin;
-        hexInp.value = decToHex(decVal);
-        stepsDiv.innerHTML = `🔹 ${decVal}₁₀ → ${binObj.bin}₂ → ${hexInp.value}₁₆<br>📐 ${binObj.steps}`;
-        addToHistory(`${decVal} → ${binObj.bin}₂`);
-      };
+window.addEventListener('resize', function(){
+  moveIndicator($('.tab.active'));
+}, { passive: true });
 
-      const updateFromBinary = () => {
-        let binStr = binInp.value.trim();
-        let dec = binToDec(binStr);
-        if (isNaN(dec)) { decInp.value = ''; hexInp.value = ''; stepsDiv.innerHTML = '❌ Invalid binary'; return; }
-        decInp.value = dec; hexInp.value = decToHex(dec);
-        stepsDiv.innerHTML = `📌 ${binStr}₂ → ${dec}₁₀ → ${hexInp.value}₁₆`;
-        addToHistory(`${binStr}₂ → ${dec}`);
-      };
+/* ============================================================
+   9 · Copy-to-clipboard (delegated)
+   ============================================================ */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('[data-copy]');
+  if (!btn) return;
 
-      const updateFromHex = () => {
-        let hexStr = hexInp.value.trim();
-        let dec = hexToDec(hexStr);
-        if (isNaN(dec)) { decInp.value = ''; binInp.value = ''; stepsDiv.innerHTML = '❌ Invalid hex'; return; }
-        decInp.value = dec; binInp.value = decToBin(dec).bin;
-        stepsDiv.innerHTML = `🧪 ${hexStr}₁₆ → ${dec}₁₀ → ${binInp.value}₂`;
-        addToHistory(`${hexStr}₁₆ → ${dec}`);
-      };
+  const target = document.getElementById(btn.dataset.copy);
+  if (!target) return;
 
-      const performArithmetic = () => {
-        let aStr = opA.value.trim(), bStr = opB.value.trim(), op = opSelect.value;
-        if (!aStr || !bStr) { arithResultSpan.textContent = '—'; arithStepsDiv.innerHTML = '⚠️ Enter both operands'; return; }
-        let isBin = /^[01]+(\.[01]+)?$/.test(aStr) && /^[01]+(\.[01]+)?$/.test(bStr);
-        let isHex = /^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(aStr) && /^[0-9a-fA-F]+(\.[0-9a-fA-F]+)?$/.test(bStr);
-        if (!isBin && !isHex) { arithStepsDiv.innerHTML = '❌ Must be binary or hex'; return; }
-        let decA = isBin ? binToDec(aStr) : hexToDec(aStr);
-        let decB = isBin ? binToDec(bStr) : hexToDec(bStr);
-        if (isNaN(decA) || isNaN(decB)) { arithStepsDiv.innerHTML = 'Invalid format'; return; }
-        let resultDec;
-        switch(op) {
-          case '+': resultDec = decA + decB; break;
-          case '-': resultDec = decA - decB; break;
-          case '*': resultDec = decA * decB; break;
-          case '/': if (decB === 0) { arithResultSpan.textContent = 'Div/0'; return; } resultDec = decA / decB; break;
-        }
-        if (!isFinite(resultDec)) { arithResultSpan.textContent = 'Error'; return; }
-        let resultStr = isBin ? decToBin(resultDec).bin : decToHex(resultDec);
-        arithResultSpan.textContent = resultStr;
-        arithStepsDiv.innerHTML = `🧮 ${aStr} ${op} ${bStr} = ${resultDec}₁₀ → ${resultStr}`;
-      };
+  const text = (target.textContent || '').trim();
+  if (!text || text === '—') return;
 
-      decInp.addEventListener('input', () => updateAllFromDecimal('dec'));
-      binInp.addEventListener('input', updateFromBinary);
-      hexInp.addEventListener('input', updateFromHex);
-      ieeeInput.addEventListener('input', updateIEEE754);
-      document.getElementById('computeArithBtn').addEventListener('click', performArithmetic);
-      document.getElementById('clearHistory').addEventListener('click', () => { localStorage.removeItem('bitmatrixHistory'); renderHistory(); });
-      document.getElementById('clearConverter').addEventListener('click', () => { decInp.value = ''; binInp.value = ''; hexInp.value = ''; stepsDiv.innerHTML = '✨ Cleared'; });
-      historyDiv.addEventListener('click', (e) => { if (e.target.classList.contains('history-item')) { let m = e.target.textContent.match(/[\d]+\.?\d*/); if (m) { decInp.value = m[0]; updateAllFromDecimal('dec'); } } });
-      window.addEventListener('load', () => { renderHistory(); if (decInp.value) updateAllFromDecimal('dec'); updateIEEE754(); });
-    })();
-  </script>
+  const done = function(){
+    btn.classList.add('done');
+    setTimeout(function(){ btn.classList.remove('done'); }, 1300);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(function(){});
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch(err){}
+    document.body.removeChild(ta);
+  }
+});
+
+/* ============================================================
+   10 · Boot
+   ============================================================ */
+function boot(){
+  loadHistory();
+  renderHistory();
+
+  if (decInput.value) syncFromDec(false);
+  updateIEEE();
+
+  /* indicator needs layout + fonts to be stable */
+  requestAnimationFrame(function(){ moveIndicator($('.tab.active')); });
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ moveIndicator($('.tab.active')); });
+  }
+
+  /* recompute arithmetic once on first visit to the tab */
+  renderHint(arithConsole, 'Enter both operands and hit compute.');
+}
+
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+
+})();
+</script>
 </body>
 </html>
